@@ -1,455 +1,455 @@
 [
-{
-"id":0,
-"route":[
-{
-"from":"Enschede",
-"to":"Lelystad",
-"merchandise":{
-"eggs":10,
-"salt":15,
-"carrots":7,
-"popcorn":9,
-"lettuce":8
-}
-},
-{
-"from":"Lelystad",
-"to":"Dordrecht",
-"merchandise":{
-"flour":19,
-"yogurt":11,
-"rice":6,
-"salt":8,
-"soap":6
-}
-},
-{
-"from":"Dordrecht",
-"to":"Sittard",
-"merchandise":{
-"chicken":18,
-"apples":14,
-"ketchup":14,
-"oil":17,
-"sauce":14
-}
-},
-{
-"from":"Sittard",
-"to":"Emmen",
-"merchandise":{
-"sauce":8,
-"oranges":18,
-"peanutbutter":10,
-"jam":11,
-"tea":6
-}
-},
-{
-"from":"Emmen",
-"to":"Venlo",
-"merchandise":{
-"sugar":13,
-"beef":8,
-"soup":18
-}
-},
-{
-"from":"Venlo",
-"to":"Amersfoort",
-"merchandise":{
-"lettuce":17,
-"pork":6,
-"ketchup":7,
-"cereal":9,
-"beef":13
-}
-},
-{
-"from":"Amersfoort",
-"to":"Venlo",
-"merchandise":{
-"carrots":6,
-"cucumbers":5,
-"juice":10
-}
-},
-{
-"from":"Venlo",
-"to":"Zwolle",
-"merchandise":{
-"cheese":5,
-"icecream":18,
-"onions":10,
-"cereal":6,
-"beef":16
-}
-},
-{
-"from":"Zwolle",
-"to":"Enschede",
-"merchandise":{
-"soda":8,
-"vinegar":16,
-"potatoes":17,
-"chips":6
-}
-}
-]
-},
-{
-"id":1,
-"route":[
-{
-"from":"Zwolle",
-"to":"Tilburg",
-"merchandise":{
-"pickles":16,
-"bananas":8,
-"rice":15
-}
-},
-{
-"from":"Tilburg",
-"to":"Leeuwarden",
-"merchandise":{
-"cereal":15,
-"cookies":15,
-"yogurt":9,
-"beef":7,
-"soda":14
-}
-},
-{
-"from":"Leeuwarden",
-"to":"Dordrecht",
-"merchandise":{
-"jam":8,
-"icecream":10,
-"cereal":10,
-"beef":11,
-"popcorn":6
-}
-},
-{
-"from":"Dordrecht",
-"to":"Breda",
-"merchandise":{
-"mustard":7,
-"sauce":13,
-"chips":19,
-"pork":6
-}
-},
-{
-"from":"Breda",
-"to":"Maastricht",
-"merchandise":{
-"mustard":8,
-"cucumbers":9,
-"chicken":10
-}
-},
-{
-"from":"Maastricht",
-"to":"Leiden",
-"merchandise":{
-"vinegar":6,
-"strawberries":10,
-"cucumbers":11,
-"apples":18
-}
-},
-{
-"from":"Leiden",
-"to":"Rotterdam",
-"merchandise":{
-"milk":14,
-"coffee":13,
-"ketchup":12
-}
-},
-{
-"from":"Rotterdam",
-"to":"Zwolle",
-"merchandise":{
-"water":9,
-"oil":5,
-"pizza":19,
-"chips":11,
-"soap":18
-}
-},
-{
-"from":"Zwolle",
-"to":"Tilburg",
-"merchandise":{
-"apples":11,
-"tomatoes":14,
-"water":16,
-"flour":6,
-"oil":14
-}
-}
-]
-},
-{
-"id":2,
-"route":[
-{
-"from":"Leeuwarden",
-"to":"Den Haag",
-"merchandise":{
-"pork":6,
-"juice":6,
-"soup":12
-}
-},
-{
-"from":"Den Haag",
-"to":"Alkmaar",
-"merchandise":{
-"mayo":15,
-"salt":10,
-"chips":14,
-"oranges":8,
-"onions":13
-}
-},
-{
-"from":"Alkmaar",
-"to":"Dordrecht",
-"merchandise":{
-"juice":19,
-"soap":11,
-"water":13
-}
-},
-{
-"from":"Dordrecht",
-"to":"Sittard",
-"merchandise":{
-"oatmeal":5,
-"water":8,
-"sauce":6
-}
-},
-{
-"from":"Sittard",
-"to":"Amsterdam",
-"merchandise":{
-"vinegar":11,
-"strawberries":14,
-"yogurt":17
-}
-},
-{
-"from":"Amsterdam",
-"to":"Sittard",
-"merchandise":{
-"yogurt":14,
-"soap":17,
-"onions":5
-}
-},
-{
-"from":"Sittard",
-"to":"Eindhoven",
-"merchandise":{
-"popcorn":7,
-"lettuce":18,
-"pickles":13,
-"honey":11,
-"sauce":18
-}
-},
-{
-"from":"Eindhoven",
-"to":"Lelystad",
-"merchandise":{
-"mayo":16,
-"chips":12,
-"sugar":13,
-"chicken":7
-}
-},
-{
-"from":"Lelystad",
-"to":"Dordrecht",
-"merchandise":{
-"mustard":6,
-"soup":8,
-"bananas":6
-}
-}
-]
-},
-{
-"id":3,
-"route":[
-{
-"from":"Emmen",
-"to":"Breda",
-"merchandise":{
-"tea":15,
-"soup":12,
-"potatoes":14,
-"cheese":11,
-"chips":18
-}
-},
-{
-"from":"Breda",
-"to":"Arnhem",
-"merchandise":{
-"pork":5,
-"cheese":9,
-"cereal":19,
-"salt":7,
-"flour":19
-}
-},
-{
-"from":"Arnhem",
-"to":"Emmen",
-"merchandise":{
-"potatoes":8,
-"tea":19,
-"strawberries":12,
-"rice":14
-}
-},
-{
-"from":"Emmen",
-"to":"Leeuwarden",
-"merchandise":{
-"tissues":17,
-"tomatoes":8,
-"mustard":11,
-"pork":5
-}
-},
-{
-"from":"Leeuwarden",
-"to":"Haarlem",
-"merchandise":{
-"oil":17,
-"pickles":19,
-"strawberries":9,
-"oatmeal":9,
-"chocolate":19
-}
-},
-{
-"from":"Haarlem",
-"to":"Hoofddorp",
-"merchandise":{
-"tea":14,
-"chocolate":5,
-"strawberries":19,
-"oranges":10,
-"onions":13
-}
-},
-{
-"from":"Hoofddorp",
-"to":"Rotterdam",
-"merchandise":{
-"ketchup":8,
-"peanutbutter":8,
-"cucumbers":12,
-"rice":16
-}
-},
-{
-"from":"Rotterdam",
-"to":"Zaanstad",
-"merchandise":{
-"peanutbutter":19,
-"chicken":9,
-"chocolate":17
-}
-}
-]
-},
-{
-"id":4,
-"route":[
-{
-"from":"Amersfoort",
-"to":"Venlo",
-"merchandise":{
-"peanutbutter":12,
-"milk":17
-}
-},
-{
-"from":"Venlo",
-"to":"Groningen",
-"merchandise":{
-"onions":8,
-"mayo":12,
-"yogurt":19,
-"bread":17
-}
-},
-{
-"from":"Groningen",
-"to":"Hoofddorp",
-"merchandise":{
-"bread":7,
-"chicken":13,
-"oil":14
-}
-},
-{
-"from":"Hoofddorp",
-"to":"Haarlem",
-"merchandise":{
-"cheese":7,
-"tomatoes":14,
-"eggs":11
-}
-},
-{
-"from":"Haarlem",
-"to":"Deventer",
-"merchandise":{
-"chips":16,
-"jam":11,
-"cheese":7,
-"salt":17
-}
-},
-{
-"from":"Deventer",
-"to":"Venlo",
-"merchandise":{
-"chicken":6,
-"chocolate":9,
-"yogurt":10,
-"pasta":16
-}
-},
-{
-"from":"Venlo",
-"to":"Maastricht",
-"merchandise":{
-"cheese":17,
-"cookies":13,
-"icecream":11
-}
-},
-{
-"from":"Maastricht",
-"to":"Rotterdam",
-"merchandise":{
-"oil":11,
-"cucumbers":6,
-"potatoes":19
-}
-}
-]
-}
+   {
+      "id":0,
+      "route":[
+         {
+            "from":"Enschede",
+            "to":"Lelystad",
+            "merchandise":{
+               "eggs":10,
+               "salt":15,
+               "carrots":7,
+               "popcorn":9,
+               "lettuce":8
+            }
+         },
+         {
+            "from":"Lelystad",
+            "to":"Dordrecht",
+            "merchandise":{
+               "flour":19,
+               "yogurt":11,
+               "rice":6,
+               "salt":8,
+               "soap":6
+            }
+         },
+         {
+            "from":"Dordrecht",
+            "to":"Sittard",
+            "merchandise":{
+               "chicken":18,
+               "apples":14,
+               "ketchup":14,
+               "oil":17,
+               "sauce":14
+            }
+         },
+         {
+            "from":"Sittard",
+            "to":"Emmen",
+            "merchandise":{
+               "sauce":8,
+               "oranges":18,
+               "peanutbutter":10,
+               "jam":11,
+               "tea":6
+            }
+         },
+         {
+            "from":"Emmen",
+            "to":"Venlo",
+            "merchandise":{
+               "sugar":13,
+               "beef":8,
+               "soup":18
+            }
+         },
+         {
+            "from":"Venlo",
+            "to":"Amersfoort",
+            "merchandise":{
+               "lettuce":17,
+               "pork":6,
+               "ketchup":7,
+               "cereal":9,
+               "beef":13
+            }
+         },
+         {
+            "from":"Amersfoort",
+            "to":"Venlo",
+            "merchandise":{
+               "carrots":6,
+               "cucumbers":5,
+               "juice":10
+            }
+         },
+         {
+            "from":"Venlo",
+            "to":"Zwolle",
+            "merchandise":{
+               "cheese":5,
+               "icecream":18,
+               "onions":10,
+               "cereal":6,
+               "beef":16
+            }
+         },
+         {
+            "from":"Zwolle",
+            "to":"Enschede",
+            "merchandise":{
+               "soda":8,
+               "vinegar":16,
+               "potatoes":17,
+               "chips":6
+            }
+         }
+      ]
+   },
+   {
+      "id":1,
+      "route":[
+         {
+            "from":"Zwolle",
+            "to":"Tilburg",
+            "merchandise":{
+               "pickles":16,
+               "bananas":8,
+               "rice":15
+            }
+         },
+         {
+            "from":"Tilburg",
+            "to":"Leeuwarden",
+            "merchandise":{
+               "cereal":15,
+               "cookies":15,
+               "yogurt":9,
+               "beef":7,
+               "soda":14
+            }
+         },
+         {
+            "from":"Leeuwarden",
+            "to":"Dordrecht",
+            "merchandise":{
+               "jam":8,
+               "icecream":10,
+               "cereal":10,
+               "beef":11,
+               "popcorn":6
+            }
+         },
+         {
+            "from":"Dordrecht",
+            "to":"Breda",
+            "merchandise":{
+               "mustard":7,
+               "sauce":13,
+               "chips":19,
+               "pork":6
+            }
+         },
+         {
+            "from":"Breda",
+            "to":"Maastricht",
+            "merchandise":{
+               "mustard":8,
+               "cucumbers":9,
+               "chicken":10
+            }
+         },
+         {
+            "from":"Maastricht",
+            "to":"Leiden",
+            "merchandise":{
+               "vinegar":6,
+               "strawberries":10,
+               "cucumbers":11,
+               "apples":18
+            }
+         },
+         {
+            "from":"Leiden",
+            "to":"Rotterdam",
+            "merchandise":{
+               "milk":14,
+               "coffee":13,
+               "ketchup":12
+            }
+         },
+         {
+            "from":"Rotterdam",
+            "to":"Zwolle",
+            "merchandise":{
+               "water":9,
+               "oil":5,
+               "pizza":19,
+               "chips":11,
+               "soap":18
+            }
+         },
+         {
+            "from":"Zwolle",
+            "to":"Tilburg",
+            "merchandise":{
+               "apples":11,
+               "tomatoes":14,
+               "water":16,
+               "flour":6,
+               "oil":14
+            }
+         }
+      ]
+   },
+   {
+      "id":2,
+      "route":[
+         {
+            "from":"Leeuwarden",
+            "to":"Den Haag",
+            "merchandise":{
+               "pork":6,
+               "juice":6,
+               "soup":12
+            }
+         },
+         {
+            "from":"Den Haag",
+            "to":"Alkmaar",
+            "merchandise":{
+               "mayo":15,
+               "salt":10,
+               "chips":14,
+               "oranges":8,
+               "onions":13
+            }
+         },
+         {
+            "from":"Alkmaar",
+            "to":"Dordrecht",
+            "merchandise":{
+               "juice":19,
+               "soap":11,
+               "water":13
+            }
+         },
+         {
+            "from":"Dordrecht",
+            "to":"Sittard",
+            "merchandise":{
+               "oatmeal":5,
+               "water":8,
+               "sauce":6
+            }
+         },
+         {
+            "from":"Sittard",
+            "to":"Amsterdam",
+            "merchandise":{
+               "vinegar":11,
+               "strawberries":14,
+               "yogurt":17
+            }
+         },
+         {
+            "from":"Amsterdam",
+            "to":"Sittard",
+            "merchandise":{
+               "yogurt":14,
+               "soap":17,
+               "onions":5
+            }
+         },
+         {
+            "from":"Sittard",
+            "to":"Eindhoven",
+            "merchandise":{
+               "popcorn":7,
+               "lettuce":18,
+               "pickles":13,
+               "honey":11,
+               "sauce":18
+            }
+         },
+         {
+            "from":"Eindhoven",
+            "to":"Lelystad",
+            "merchandise":{
+               "mayo":16,
+               "chips":12,
+               "sugar":13,
+               "chicken":7
+            }
+         },
+         {
+            "from":"Lelystad",
+            "to":"Dordrecht",
+            "merchandise":{
+               "mustard":6,
+               "soup":8,
+               "bananas":6
+            }
+         }
+      ]
+   },
+   {
+      "id":3,
+      "route":[
+         {
+            "from":"Emmen",
+            "to":"Breda",
+            "merchandise":{
+               "tea":15,
+               "soup":12,
+               "potatoes":14,
+               "cheese":11,
+               "chips":18
+            }
+         },
+         {
+            "from":"Breda",
+            "to":"Arnhem",
+            "merchandise":{
+               "pork":5,
+               "cheese":9,
+               "cereal":19,
+               "salt":7,
+               "flour":19
+            }
+         },
+         {
+            "from":"Arnhem",
+            "to":"Emmen",
+            "merchandise":{
+               "potatoes":8,
+               "tea":19,
+               "strawberries":12,
+               "rice":14
+            }
+         },
+         {
+            "from":"Emmen",
+            "to":"Leeuwarden",
+            "merchandise":{
+               "tissues":17,
+               "tomatoes":8,
+               "mustard":11,
+               "pork":5
+            }
+         },
+         {
+            "from":"Leeuwarden",
+            "to":"Haarlem",
+            "merchandise":{
+               "oil":17,
+               "pickles":19,
+               "strawberries":9,
+               "oatmeal":9,
+               "chocolate":19
+            }
+         },
+         {
+            "from":"Haarlem",
+            "to":"Hoofddorp",
+            "merchandise":{
+               "tea":14,
+               "chocolate":5,
+               "strawberries":19,
+               "oranges":10,
+               "onions":13
+            }
+         },
+         {
+            "from":"Hoofddorp",
+            "to":"Rotterdam",
+            "merchandise":{
+               "ketchup":8,
+               "peanutbutter":8,
+               "cucumbers":12,
+               "rice":16
+            }
+         },
+         {
+            "from":"Rotterdam",
+            "to":"Zaanstad",
+            "merchandise":{
+               "peanutbutter":19,
+               "chicken":9,
+               "chocolate":17
+            }
+         }
+      ]
+   },
+   {
+      "id":4,
+      "route":[
+         {
+            "from":"Amersfoort",
+            "to":"Venlo",
+            "merchandise":{
+               "peanutbutter":12,
+               "milk":17
+            }
+         },
+         {
+            "from":"Venlo",
+            "to":"Groningen",
+            "merchandise":{
+               "onions":8,
+               "mayo":12,
+               "yogurt":19,
+               "bread":17
+            }
+         },
+         {
+            "from":"Groningen",
+            "to":"Hoofddorp",
+            "merchandise":{
+               "bread":7,
+               "chicken":13,
+               "oil":14
+            }
+         },
+         {
+            "from":"Hoofddorp",
+            "to":"Haarlem",
+            "merchandise":{
+               "cheese":7,
+               "tomatoes":14,
+               "eggs":11
+            }
+         },
+         {
+            "from":"Haarlem",
+            "to":"Deventer",
+            "merchandise":{
+               "chips":16,
+               "jam":11,
+               "cheese":7,
+               "salt":17
+            }
+         },
+         {
+            "from":"Deventer",
+            "to":"Venlo",
+            "merchandise":{
+               "chicken":6,
+               "chocolate":9,
+               "yogurt":10,
+               "pasta":16
+            }
+         },
+         {
+            "from":"Venlo",
+            "to":"Maastricht",
+            "merchandise":{
+               "cheese":17,
+               "cookies":13,
+               "icecream":11
+            }
+         },
+         {
+            "from":"Maastricht",
+            "to":"Rotterdam",
+            "merchandise":{
+               "oil":11,
+               "cucumbers":6,
+               "potatoes":19
+            }
+         }
+      ]
+   }
 ]
