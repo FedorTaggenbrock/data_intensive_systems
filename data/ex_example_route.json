@@ -1,0 +1,66 @@
+[
+    {
+        "id": 5,
+        "route": [
+            {
+                "from": "Eindhoven",
+                "to": "Utrecht",
+                "merchandise": {
+                    "milk": 3,
+                    "pens": 10,
+                    "butter": 20
+                }
+            },
+            {
+                "from": "Utrecht",
+                "to": "Amsterdam",
+                "merchandise": {
+                    "milk": 5,
+                    "honey": 9,
+                    "butter": 10,
+                    "tomatoes": 20
+                }
+            },
+            {
+                "from": "Amsterdam",
+                "to": "Den Haag",
+                "merchandise": {
+                    "butter": 7,
+                    "pens": 2,
+                    "tomatoes": 10
+                }
+            }
+        ]
+    },
+    {
+        "id": 10,
+        "route": [
+            {
+                "from": "Eindhoven",
+                "to": "Utrecht",
+                "merchandise": {
+                    "milk": 2,
+                    "pens": 10,
+                    "butter": 20
+                }
+            },
+            {
+                "from": "Utrecht",
+                "to": "Amsterdam",
+                "merchandise": {
+                    "milk": 5,
+                    "tomatoes": 24
+                }
+            },
+            {
+                "from": "Amsterdam",
+                "to": "Den Haag",
+                "merchandise": {
+                    "butter": 7,
+                    "bread": 2,
+                    "tomatoes": 10
+                }
+            }
+        ]
+    }
+]
