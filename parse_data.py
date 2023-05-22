@@ -1,5 +1,6 @@
 import json
 import pandas as pd
+import inspect
 
 def parse_json_data(json_path='data/ex_example_route.json'):
     """Parse the data from the json file to a pandas df."""
@@ -38,24 +39,51 @@ def parse_json_data(json_path='data/ex_example_route.json'):
 
     return df
 
-def encode_data(df: pd.DataFrame) -> pd.DataFrame:
-    """Encode data to be used for clutsering. E.g. one-hot encoding of the cities."""
-    # One-hot encode the cities
-    df = pd.get_dummies(df, columns=['from', 'to'])
+def encode_data(df: pd.DataFrame, 
+                one_hot_encode: bool = True,
+                encode_style: str = 'all') -> pd.DataFrame:
+    """
+    Encode data to be used for clustering. One-hot encode the cities.
+    
+    Args:
+    - df: pandas DataFrame containing the data to be encoded
+    - encode_style: Indicates in what style to generate the data. Used to e.g. only keep categorical features; mostly for testing.
+                        Possible values: 'all', 'num_only', 'cat_only'.
+    - one_hot_encode: bool indicating whether to one-hot encode the cities or not.
+    
+    Returns:
+    - pandas DataFrame containing the encoded data.
+    """
+    
+    # Default option
+    if encode_style == 'all':
+        if one_hot_encode:
+            # One-hot encode the cities
+            df = pd.get_dummies(df, columns=['from', 'to'])
 
-    # Scale the one-hot features appropriately; TODO
-    # To do this, first select all one-hot columns.
-    
-    one_hot_cols = [col for col in df.columns if col.startswith('from_') or col.startswith('to_')]
-    
-    # TODO: scale the one-hot columns
-    
+        # Scale the one-hot features appropriately; TODO
+        # To do this, first select all one-hot columns.
+        # one_hot_cols = [col for col in df.columns if col.startswith('from_') or col.startswith('to_')]
+
+
+    elif encode_style == 'num_only':
+        # Drop categorical columns
+        df.drop(columns=['from', 'to'], inplace=True)
+    elif encode_style == 'cat_only':
+        # Drop numerical columns (i.e. keep only the categorical columns)
+        df.drop(columns=[col for col in df.columns if col not in ['from', 'to']], inplace=True)
+        if one_hot_encode:
+            # One-hot encode the cities
+            df = pd.get_dummies(df, columns=['from', 'to'])
+    else:
+        raise NotImplementedError(f'encode_style "{encode_style}" not implemented in function "{inspect.currentframe().f_code.co_name}."')
 
     return df
 
 if __name__ == '__main__':
+    # Write comment that says this is only used for testing
     df = parse_json_data()
-    df = encode_data(df)
+    df = encode_data(df, encode_style='all_')
 
     # Print formatting
     pd.set_option('expand_frame_repr', True)
