@@ -141,8 +141,8 @@ def clustering_test1():
     for centroid in centroids:
         print(centroid)
     
-    # Print the evaluation metrics
-    print(evaluate_clustering(data, centroids, clustering_setting='kModes'))
+    # # Print the evaluation metrics
+    # print(evaluate_clustering(data, centroids, clustering_setting='kModes'))
 
 if __name__ == '__main__':
     clustering_test1()
