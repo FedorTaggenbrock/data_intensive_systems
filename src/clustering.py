@@ -131,15 +131,17 @@ def clustering_test1():
             [1,0,0,1,0],
         ])
 
-    print("Initialized Spark. Start clustering.")
-    # Cluster the data into two clusters using the k-modes algorithm with a custom distance function. 
-
-    centroids = kModes_v2(scipy.spatial.distance.jaccard, data, k=2, maxIterations=2, list_size = 5)
-
-    print("Finished clustering. Start evaluation.")
-    # Print the resulting centroids
-    for centroid in centroids:
-        print(centroid)
+    x = data.takeSample(withReplacement=True, num=2)
+    print(x)
+    # print("Initialized Spark. Start clustering.")
+    # # Cluster the data into two clusters using the k-modes algorithm with a custom distance function.
+    #
+    # centroids = kModes_v2(scipy.spatial.distance.jaccard, data, k=2, maxIterations=2, list_size = 5)
+    #
+    # print("Finished clustering. Start evaluation.")
+    # # Print the resulting centroids
+    # for centroid in centroids:
+    #     print(centroid)
     
     # # Print the evaluation metrics
     # print(evaluate_clustering(data, centroids, clustering_setting='kModes'))
