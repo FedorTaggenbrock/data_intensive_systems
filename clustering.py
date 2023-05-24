@@ -135,6 +135,7 @@ if __name__ == '__main__':
 
     print("Initialized Spark. Start clustering.")
     # Cluster the data into two clusters using the k-modes algorithm with a custom distance function. 
+
     centroids = kModes_v2(scipy.spatial.distance.jaccard, data, k=2, maxIterations=2, list_size = 5)
 
     print("Finished clustering. Start evaluation.")
