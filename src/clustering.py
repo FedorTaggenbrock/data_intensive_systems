@@ -140,7 +140,9 @@ def clustering_test1():
     # Print the resulting centroids
     for centroid in centroids:
         print(centroid)
-    
+
+    print("done")
+
     # # Print the evaluation metrics
     # print(evaluate_clustering(data, centroids, clustering_setting='kModes'))
 
