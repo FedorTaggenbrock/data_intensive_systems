@@ -1,2 +1,3 @@
 *.ipynb
 notebooks/main_tests_notebook.ipynb
+notebooks/Spark_experiments_notebook.ipynb
