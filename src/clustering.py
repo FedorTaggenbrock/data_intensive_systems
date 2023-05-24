@@ -138,8 +138,8 @@ def clustering_test1():
 
     print("Finished clustering. Start evaluation.")
     # Print the resulting centroids
-    for centroid in centroids:
-        print(centroid)
+    # for centroid in centroids:
+    #     print(centroid)
 
     print("done")
 
