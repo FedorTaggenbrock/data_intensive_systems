@@ -116,9 +116,7 @@ def evaluate_kModes(data: RDD, centroids: list, distance = scipy.spatial.distanc
         'average_centroid_deviation': average_centroid_deviation,
     }
 
-
-
-if __name__ == '__main__':
+def clustering_test1():
     # Testing code
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
 
@@ -145,3 +143,8 @@ if __name__ == '__main__':
     
     # Print the evaluation metrics
     print(evaluate_clustering(data, centroids, clustering_setting='kModes'))
+
+if __name__ == '__main__':
+    clustering_test1()
+    
+    
