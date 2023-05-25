@@ -118,7 +118,7 @@ def evaluate_kModes(data: RDD, centroids: list, distance = scipy.spatial.distanc
 
 def clustering_test1():
     # Testing code
-    print('update 14:32')
+    print('update 14:40')
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
 
     data = spark.sparkContext.parallelize([
