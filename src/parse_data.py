@@ -80,7 +80,8 @@ def encode_data(df: pd.DataFrame,
 
     return df
 
-if __name__ == '__main__':
+
+def parse_test():
     # Write comment that says this is only used for testing
     df = parse_json_data()
     df = encode_data(df, encode_style='all_')
@@ -91,3 +92,6 @@ if __name__ == '__main__':
     pd.set_option('display.max_columns', 100)
 
     print(df.head())
+
+if __name__ == '__main__':
+    parse_test()
