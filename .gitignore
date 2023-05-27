@@ -1,5 +1,10 @@
 *.ipynb
 notebooks/main_tests_notebook.ipynb
 notebooks/Spark_experiments_notebook.ipynb
-notebooks/*.py
+
+# Accidentally downloaded .py modules
+notebooks/*.py 
+
+# Cached files / notebook metadata
 src/__pycache__/*.pyc
+src/__pycache__/clustering.cpython-39.pyc
