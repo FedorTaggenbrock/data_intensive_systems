@@ -10,6 +10,40 @@ import scipy
 from pyspark import RDD
 from pyspark import SparkContext
 
+# Parameter search imports
+from pyspark.ml import Estimator, Model
+from pyspark.ml.param import Param, Params
+from pyspark.ml.tuning import ParamGridBuilder, CrossValidator
+
+from pyspark.sql import SparkSession
+
+def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data: RDD) -> list[tuple]:
+    '''Define variables to store results.'''
+    # E.g. for kmodes: [(predicted_centroids, (k, init_mode)), ...]
+    results = []
+
+    # Check which clustering algortihm to run
+    if clustering_settings['clustering_algorithm'] == 'kmodes':
+        for k in clustering_settings['k_values']:
+            for init_mode in clustering_settings['init_modes']:
+                # Run clustering with current parameters
+                predicted_centroids = kmodes(
+                    spark_instance=spark_instance,
+                    k=k,
+                    init_mode=clustering_settings['init_mode'],
+                    max_iter=clustering_settings['max_iter']
+                )
+    
+                # Store the settings, model, and metrics
+                results.append( (predicted_centroids, (k, init_mode)) )
+    else:
+        print("Clustering algorithm setting not recognized in run_and_tune().")
+    
+    return results
+
+
+
+
 
 # Define a custom distance function
 def jaccard_distance(a, b):
@@ -20,7 +54,7 @@ def jaccard_distance(a, b):
     return 1 - (intersection / union)
 
 
-def kModes_v2(distance, data: RDD, k: int, maxIterations: int, list_size: int) -> list:
+def kModes_v2(spark_instance: SparkSession,distance, data: RDD, k: int, maxIterations: int, list_size: int) -> list:
     """
     Perform k-modes clustering on the given data. Assumes only one-hot encoded data?
 
@@ -58,7 +92,7 @@ def kModes_v2(distance, data: RDD, k: int, maxIterations: int, list_size: int) -
 
     return [list(x) for x in centroids]
 
-def evaluate_clustering(data: RDD, centroids: list, clustering_setting: str = 'kModes', perfect_centroids = None) -> dict:
+def evaluate_clustering(data: RDD, predicted_centroids: list, clustering_settings: dict, perfect_centroids = None) -> dict:
     """
     Evaluate the clustering of the given data using the given centroids and clustering setting.
 
@@ -66,7 +100,6 @@ def evaluate_clustering(data: RDD, centroids: list, clustering_setting: str = 'k
         data (RDD): The RDD containing the data to cluster.
         centroids (list): The centroids of the clusters.
         clustering_setting (str): The type of clustering algorithm to use. Currently supports "kModes" and "kMeans".
-
     Returns:
         dict: A dictionary with evaluation metrics.
     Raises:
@@ -74,9 +107,10 @@ def evaluate_clustering(data: RDD, centroids: list, clustering_setting: str = 'k
         NotImplementedError: If the clustering setting is recognized but not implemented.
     """
 
-    if clustering_setting == "kModes":
-        evaluation_metrics = evaluate_kModes(data, centroids, perfect_centroids=perfect_centroids)
-    elif clustering_setting == "kMeans":
+    # Check which evaluation function to use
+    if clustering_settings['clustering_algorithm'] == "kmodes":
+        evaluation_metrics = evaluate_kModes(data, predicted_centroids, perfect_centroids=perfect_centroids)
+    elif clustering_settings['clustering_algorithm'] == "kMeans":
         raise NotImplementedError
     else:
         raise NameError(f"Clustering setting not recognized.")
@@ -118,7 +152,6 @@ def evaluate_kModes(data: RDD, centroids: list, distance = scipy.spatial.distanc
 
 def clustering_test1():
     # Testing code
-    print('update 15:21')
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
 
     data = spark.sparkContext.parallelize([
@@ -143,6 +176,8 @@ def clustering_test1():
     #     print(centroid)
 
     print("done")
+
+    return centroids
 
     # # Print the evaluation metrics
     # print(evaluate_clustering(data, centroids, clustering_setting='kModes'))
