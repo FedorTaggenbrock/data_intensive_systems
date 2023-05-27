@@ -24,24 +24,25 @@ def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data
 
     # Check which clustering algortihm to run
     if clustering_settings['clustering_algorithm'] == 'kmodes':
-        for k in clustering_settings['k_values']:
-            for init_mode in clustering_settings['init_modes']:
-                # Run clustering with current parameters
-                predicted_centroids = kmodes(
-                    spark_instance=spark_instance,
-                    k=k,
-                    init_mode=clustering_settings['init_mode'],
-                    max_iter=clustering_settings['max_iter']
-                )
-    
-                # Store the settings, model, and metrics
-                results.append( (predicted_centroids, (k, init_mode)) )
+        for current_k in clustering_settings['k_values']: 
+            # TODO in the future add other parameters here.
+
+            # Run clustering with current parameters
+            predicted_centroids = kModes_v2(
+                spark_instance=spark_instance,
+                data=data,
+                distance=clustering_settings['distance_function'],
+                k=current_k,
+                max_iterations=clustering_settings['max_iterations'],
+                debug_flag=clustering_settings['debug_flag']
+            )
+
+            # Store the settings, model, and metrics
+            results.append( (predicted_centroids, {'k':current_k}) )
     else:
         print("Clustering algorithm setting not recognized in run_and_tune().")
     
     return results
-
-
 
 
 
@@ -54,7 +55,7 @@ def jaccard_distance(a, b):
     return 1 - (intersection / union)
 
 
-def kModes_v2(spark_instance: SparkSession,distance, data: RDD, k: int, maxIterations: int, list_size: int) -> list:
+def kModes_v2(spark_instance: SparkSession, distance, data: RDD, k: int, max_iterations: int, debug_flag=False) -> list:
     """
     Perform k-modes clustering on the given data. Assumes only one-hot encoded data?
 
@@ -62,8 +63,7 @@ def kModes_v2(spark_instance: SparkSession,distance, data: RDD, k: int, maxItera
         distance (function): The distance function to use for clustering.
         data (RDD): The RDD containing the data to cluster.
         k (int): The number of clusters to create.
-        maxIterations (int): The maximum number of iterations to perform.
-        list_size (int): The size of the lists in the data.
+        max iterations (int): The maximum number of iterations to perform.
 
     Returns:
         list: A list of the centroids of the clusters.
@@ -72,8 +72,8 @@ def kModes_v2(spark_instance: SparkSession,distance, data: RDD, k: int, maxItera
     centroids = [tuple(x) for x in data.takeSample(withReplacement=False, num=k)]
 
     # Iterate until convergence or until the maximum number of iterations is reached
-    for i in range(maxIterations):
-        print("centroids = ", centroids)
+    for i in range(max_iterations):
+        if debug_flag: print("centroids = ", centroids)
 
         # Assign each point to the closest centroid
         clusters = data.map(lambda point: (min(centroids, key=lambda centroid: distance(point, centroid)), point)).groupByKey()
@@ -92,67 +92,12 @@ def kModes_v2(spark_instance: SparkSession,distance, data: RDD, k: int, maxItera
 
     return [list(x) for x in centroids]
 
-def evaluate_clustering(data: RDD, predicted_centroids: list, clustering_settings: dict, perfect_centroids = None) -> dict:
-    """
-    Evaluate the clustering of the given data using the given centroids and clustering setting.
 
-    Args:
-        data (RDD): The RDD containing the data to cluster.
-        centroids (list): The centroids of the clusters.
-        clustering_setting (str): The type of clustering algorithm to use. Currently supports "kModes" and "kMeans".
-    Returns:
-        dict: A dictionary with evaluation metrics.
-    Raises:
-        NameError: If the clustering setting is not recognized.
-        NotImplementedError: If the clustering setting is recognized but not implemented.
-    """
-
-    # Check which evaluation function to use
-    if clustering_settings['clustering_algorithm'] == "kmodes":
-        evaluation_metrics = evaluate_kModes(data, predicted_centroids, perfect_centroids=perfect_centroids)
-    elif clustering_settings['clustering_algorithm'] == "kMeans":
-        raise NotImplementedError
-    else:
-        raise NameError(f"Clustering setting not recognized.")
-
-    # return data.map(lambda point: distance(point, min(centroids, key=lambda centroid: distance(point, centroid)))).sum()
-    return evaluation_metrics
-    
-
-def evaluate_kModes(data: RDD, centroids: list, distance = scipy.spatial.distance, perfect_centroids = None) -> dict:
-    """
-    Evaluate the clustering of the given data using the given centroids and k-modes algorithm.
-    """
-    # First, for each point, find its closest centroid and map it as (centroid, distance). Distance is calculated using NOTE scipy jaccard distance.
-    # Then, froup by centroid, compute the average distance to centroid for each group. 
-    closest_centroids = data.map(lambda point: (min(centroids, key=lambda centroid: distance(point, centroid)), distance(point, min(centroids, key=lambda centroid: distance(point, centroid)))))
-    average_within_cluster_distance = closest_centroids.groupByKey().mapValues(lambda distances: sum(distances) / len(distances)).collectAsMap() # TODO: CHECK IF THIS IS CORRECT
-
-    # Calculate distances between the centroids. TODO: Check if this should not be the average over amount of clusters. Or, if this needs a more manual method using the dstiance function
-    between_cluster_distance = scipy.spatial.distance.pdist(centroids, metric='jaccard') 
-
-    # Calculate within cluster variance for each cluster (aka: sum of squared distance to centroid, averaged over amount of points per cluster.)
-    within_cluster_variance = closest_centroids.map(lambda point: point[1]**2).mean()
-
-    # If perfect_centroids are given, calculate average deviation from perfection
-    if perfect_centroids:
-        average_centroid_deviation = sum([distance(a, b) for a, b in zip(centroids, centroids)]) / len(centroids)
-    else:
-        average_centroid_deviation = None
-    
-    # # Calculate within cluster variance for each cluster, averaged over amount of points per cluster
-    # within_cluster_variance = data.map(lambda point: scipy.spatial.distance.jaccard([point], centroids, metric='jaccard')).collect() # TODO: Check if this is correct
-
-    return {
-        'average_within_cluster_distance': average_within_cluster_distance,
-        'between_cluster_distance': between_cluster_distance,
-        'within_cluster_variance': within_cluster_variance,
-        'average_centroid_deviation': average_centroid_deviation,
-    }
 
 def clustering_test1():
     # Testing code
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
+    # spark = SparkSession.builder.master("local").appName("Clustering").getOrCreate()
 
     data = spark.sparkContext.parallelize([
             [1,1,0,1,0],
@@ -166,23 +111,60 @@ def clustering_test1():
         ])
 
     print("Initialized Spark. Start clustering.")
-    # Cluster the data into two clusters using the k-modes algorithm with a custom distance function.
 
-    centroids = kModes_v2(scipy.spatial.distance.jaccard, data, k=2, maxIterations=2, list_size = 5)
-
-    print("Finished clustering. Start evaluation.")
-    # Print the resulting centroids
-    # for centroid in centroids:
-    #     print(centroid)
-
-    print("done")
-
+    centroids = kModes_v2(
+        spark_instance=spark,
+        distance = scipy.spatial.distance.jaccard,
+        data=data,
+        k=2,
+        max_iterations=2,
+        )
+    
+    print("Finished clustering.")
     return centroids
 
-    # # Print the evaluation metrics
-    # print(evaluate_clustering(data, centroids, clustering_setting='kModes'))
+
+def clustering_test2():
+    # Testing code
+    spark = SparkSession.builder.appName("Clustering").getOrCreate()
+    data = spark.sparkContext.parallelize([
+            [1,1,0,1,0],
+            [1,1,1,1,0],
+            [0,0,1,0,1],
+            [1,0,0,0,1],
+            [1,0,0,1,0],
+            [1,1,1,1,0],
+            [0,1,1,0,1],
+            [1,0,0,1,0],
+        ])
+
+    print("Running clustering_test2().")
+    print("Initialized Spark. Start clustering.")
+
+    clustering_settings = {
+        'clustering_algorithm': 'kmodes',
+        'k_values': [2, 3],
+        'max_iterations': 2,
+        'distance_function': scipy.spatial.distance.jaccard,
+        'debug_flag': False,
+    }
+    centroids = run_clustering(
+        spark_instance=spark,
+        clustering_settings=clustering_settings,
+        data=data,
+        )
+
+    spark.stop()
+
+    print("Pass clustering_test2()!\n")
+    
+    return centroids
+
 
 if __name__ == '__main__':
-    clustering_test1()
+    # clustering_test1()
+    clustering_test2()	
+
+
     
     

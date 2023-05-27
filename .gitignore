@@ -1,6 +1,7 @@
-*.ipynb
-notebooks/main_tests_notebook.ipynb
+# Notebooks
+notebooks/Data_intensive_lab_1_student.ipynb
 notebooks/Spark_experiments_notebook.ipynb
+notebooks/main_tests_notebook.ipynb
 
 # Accidentally downloaded .py modules
 notebooks/*.py 
