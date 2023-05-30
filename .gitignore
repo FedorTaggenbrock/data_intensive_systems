@@ -8,4 +8,4 @@ notebooks/*.py
 
 # Cached files / notebook metadata
 src/__pycache__/*.pyc
-src/__pycache__/clustering.cpython-39.pyc
+src/__pycache__/*

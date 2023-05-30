@@ -126,6 +126,7 @@ def clustering_test1():
 
 def clustering_test2():
     # Testing code
+    print("Running clustering_test2().")
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
     data = spark.sparkContext.parallelize([
             [1,1,0,1,0],
@@ -137,8 +138,7 @@ def clustering_test2():
             [0,1,1,0,1],
             [1,0,0,1,0],
         ])
-
-    print("Running clustering_test2().")
+    
     print("Initialized Spark. Start clustering.")
 
     clustering_settings = {
@@ -156,7 +156,7 @@ def clustering_test2():
 
     spark.stop()
 
-    print("Pass clustering_test2()!\n")
+    print("Pass clustering_test2().")
     
     return centroids
 

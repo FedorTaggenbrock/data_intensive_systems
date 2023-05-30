@@ -1,9 +1,8 @@
-from typing import Callable, Union
+from typing import Any, Callable, Union
 import numpy as np
 import scipy.spatial.distance
 from pyspark import RDD
 
-from typing import Callable, Union
 import numpy as np
 import scipy.spatial.distance
 from pyspark import RDD
@@ -11,7 +10,7 @@ from pyspark.sql import SparkSession
 
 
 
-def evaluate_clustering(data: RDD, clustering_result: list, clustering_settings: dict, perfect_centroids = None) -> dict:
+def evaluate_clustering(data: RDD, clustering_result: list[tuple[ list[float], dict[str, Any]]], clustering_settings: dict, perfect_centroids = None) -> dict:
     """
     Evaluate the clustering of the given data using the given centroids and clustering setting.
 
@@ -28,7 +27,10 @@ def evaluate_clustering(data: RDD, clustering_result: list, clustering_settings:
 
     # Check which evaluation function to use
     if clustering_settings['clustering_algorithm'] == "kmodes":
-        evaluation_metrics = evaluate_kModes(data, clustering_result, perfect_centroids=perfect_centroids)
+        evaluation_metrics = evaluate_kModes(data=data, 
+                                             clustering_settings=clustering_settings,
+                                             clustering_result=clustering_result,
+                                             perfect_centroids=perfect_centroids)
     elif clustering_settings['clustering_algorithm'] == "kMeans":
         raise NotImplementedError
     else:
@@ -38,20 +40,19 @@ def evaluate_clustering(data: RDD, clustering_result: list, clustering_settings:
     return evaluation_metrics
     
 
-from typing import List, Tuple, Callable, Union
-from pyspark import RDD
-
-def evaluate_kModes(data: RDD, clustering_settings: dict, clustering_result, distance_function: Callable, perfect_centroids: Union[None, Tuple]) -> dict:
-    """
+def evaluate_kModes(data: RDD, clustering_settings: dict, clustering_result: list[tuple[ list[float], dict[str, Any]]], 
+                    perfect_centroids: Union[None, tuple]) -> dict:
+    f"""
     Evaluate the clustering of the given data using the given centroids and k-modes algorithm.
 
     Args:
         clustering_results: For each clustering setting, contains predicted centroids,
-        e.g. for kmodes: [([1.0, 2.0, 2.5], ('k', 'init_mode')), ...], akaL List[Tuple[ List[float], Tuple[str] ]].
-        Or not?
+        e.g. for kmodes: [([1.0, 2.0, 2.5], {'k':2}), ...], aka List[Tuple[ List[float], Dict[str, Any]]]
+
     """
 
     results = []
+    distance_function = clustering_settings['distance_function']
 
     for result in clustering_result:
         # Extract the centroids for this setting
@@ -67,8 +68,8 @@ def evaluate_kModes(data: RDD, clustering_settings: dict, clustering_result, dis
         #                                 'distances': [1, 2, 3, 2, 3, 2, 1, 2, 3, 1]},
         #                     centroid2: {...}, ...}
         cluster_metrics = closest_centroids.groupByKey().mapValues(lambda values: {
-            'total_distance': sum([v[1] for v in values]), # Maybe use np.sum() instead?
-            'count': len(values),
+            'total_distance': sum([v[1] for v in values]), # Maybe use np.sum() instead? Or perhaps datastructure is just different. TODO
+            'count': len(values), # should be converted to list, to make sure len() is there
             'distances': [v[1] for v in values]   # we also need the list of distances to calculate the variance
         }).collectAsMap()
 
@@ -108,8 +109,6 @@ def evaluate_kModes(data: RDD, clustering_settings: dict, clustering_result, dis
     return results
 
 
-
-
 def evaluate_clustering_test2(clustering_result):
 
     spark = SparkSession.builder.appName("evaluate_clustering_test1").getOrCreate()
@@ -143,3 +142,9 @@ def evaluate_clustering_test2(clustering_result):
     spark.stop()
 
     return metrics
+
+if __name__ == "__main__":
+    dummy_result = [([[1, 0, 0, 1, 0], [1, 1, 1, 1, 0]], {'k': 2}), ([[0, 0, 1, 0, 1], [1, 1, 1, 1, 0], [1, 0, 0, 1, 0]], {'k': 3})]
+    res = print(evaluate_clustering_test2(dummy_result)	)
+
+ 
