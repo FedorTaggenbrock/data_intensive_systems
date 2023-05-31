@@ -46,7 +46,7 @@ def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data
     return results
 
 
-def kModes_v2(spark_instance: SparkSession, distance, data: DataFrame, k: int, clustering_settings) -> list:
+def kModes_v2(spark_instance: SparkSession, distance, data: RDD, k: int, clustering_settings) -> list:
     """
     Perform k-modes clustering on the given data. Assumes only one-hot encoded data?
 
@@ -60,18 +60,11 @@ def kModes_v2(spark_instance: SparkSession, distance, data: DataFrame, k: int, c
         list: A list of the centroids of the clusters.
     """
 
-    # Initialize centroids randomly
-    centroid_ids = random.sample(range(clustering_settings["num_routes"]), k)
-
-    centroids = [data.filter(data["route_id"] == id) for id in centroid_ids]
+    centroids = [tuple(x) for x in data.takeSample(withReplacement=False, num=k)]
 
     # Iterate until convergence or until the maximum number of iterations is reached
     for i in range(clustering_settings["max_iterations"]):
-        if clustering_settings["debug_flag"]:
-            print("starting centroids = ")
-            for centroid in centroids:
-                centroid.show()
-            print("done")
+        if clustering_settings["debug_flag"]: print("centroids = ", centroids)
 
         # Assign each point to the closest centroid
         clusters = data.map(lambda point: (min(centroids, key=lambda centroid: distance(point, centroid)), point)).groupByKey()

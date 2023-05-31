@@ -81,8 +81,6 @@ def encode_data(spark: SparkSession, df: pd.DataFrame, debug_flag =False):
     spark_df = spark_df.groupBy("route_id").agg(*[collect_list(c).alias(c) for c in from_to_cols])
 
     if debug_flag:
-        print("panda's dataframe:")
-        print(result)
         print("Spark dataframe after encoding:")
         spark_df.show(truncate=False)
         print("product list:", product_list)

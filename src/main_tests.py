@@ -35,17 +35,18 @@ def run_all_tests():
 
     encoded_spark_df, product_list = encode_data(spark, pd_df, clustering_settings["debug_flag"])
 
+    encoded_rdd = encoded_spark_df.rdd
 
+    print(encoded_rdd.takeSample(num=2).collect())
 
+    print("Running run_clustering().")
+    centroids = run_clustering(
+        spark_instance=spark,
+        clustering_settings=clustering_settings,
+        data=encoded_spark_df,
+        )
+    print("The centroids are given by: ", centroids)
 
-    # print("Running run_clustering().")
-    # centroids = run_clustering(
-    #     spark_instance=spark,
-    #     clustering_settings=clustering_settings,
-    #     data=encoded_spark_df,
-    #     )
-    # print("The centroids are given by: ", centroids)
-    #
     # print("Start evaluating clusters")
 
 
