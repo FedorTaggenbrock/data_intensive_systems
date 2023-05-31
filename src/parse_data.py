@@ -37,6 +37,7 @@ def parse_json_data(json_path='data_intensive_systems/data/ex_example_route.json
     cols = ['route_id', 'from', 'to'] + [col for col in df if col not in ['id', 'from', 'to']]
     df = df[cols]
     print(df.columns)
+    print(df[0])
     return df
 
 def encode_data(df: pd.DataFrame, 
