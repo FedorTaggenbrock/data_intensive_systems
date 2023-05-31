@@ -19,7 +19,7 @@ def run_all_tests():
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
     print("Initialized Spark.")
 
-    pd_df = parse_json_data()
+    pd_df, num_routes = parse_json_data()
     spark_df = spark.createDataFrame(pd_df)
     print("Spark data frame : ")
     spark_df.show()
@@ -29,6 +29,9 @@ def run_all_tests():
     encoded_spark_df = spark.createDataFrame(encoded_pd_df)
     print("Encoded spark data frame : ")
     encoded_spark_df.show()
+    for id in range(num_routes):
+        print("df for id = ", id)
+        encoded_spark_df.filter(encoded_spark_df.route_id == id).show()
 
 
     clustering_settings = {

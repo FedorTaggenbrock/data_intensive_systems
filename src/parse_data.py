@@ -12,9 +12,11 @@ def parse_json_data(json_path='data_intensive_systems/data/ex_example_route.json
     # Initialize an empty list to hold the route dicts
     df_list = []
 
+    num_routes = 0
     # Iterate over each dict in the data; each dict represents one full route (can include multiples stops)
     for d in json_as_str:
         route_id = d['id']
+        num_routes+=1
         # Iterate over each trip in the route
         for trip in d['route']:
             # Store the cities the trip is between
@@ -36,7 +38,7 @@ def parse_json_data(json_path='data_intensive_systems/data/ex_example_route.json
     # Reorder df cols to have route_id,to,from, as the first columns
     cols = ['route_id', 'from', 'to'] + [col for col in df if col not in ['route_id', 'from', 'to']]
     df = df[cols]
-    return df
+    return df, num_routes
 
 def encode_data(df: pd.DataFrame,
                 one_hot_encode: bool = True,
