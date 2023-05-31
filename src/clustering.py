@@ -60,11 +60,12 @@ def kModes_v2(spark_instance: SparkSession, distance, data: RDD, k: int, cluster
         list: A list of the centroids of the clusters.
     """
 
-    centroids = [tuple(x) for x in data.takeSample(withReplacement=False, num=k)]
+    centroids = [x for x in data.takeSample(withReplacement=False, num=k)]
 
     # Iterate until convergence or until the maximum number of iterations is reached
     for i in range(clustering_settings["max_iterations"]):
-        if clustering_settings["debug_flag"]: print("centroids = ", centroids)
+        if clustering_settings["debug_flag"]:
+            print("centroids = ", centroids)
 
         # Assign each point to the closest centroid
         clusters = data.map(lambda point: (min(centroids, key=lambda centroid: distance(point, centroid)), point)).groupByKey()

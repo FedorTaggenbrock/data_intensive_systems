@@ -1,7 +1,7 @@
 import numpy as np
 
-def route_distance():
-    return
+def route_distance(a,b):
+    return 0.5
 
 def jaccard_distance(a, b):
     a = np.array(a)
