@@ -7,6 +7,8 @@ from statistics import mode
 from pyspark.sql import SparkSession
 import scipy
 
+from distance_function import route_distance
+
 from pyspark import RDD
 from pyspark import SparkContext
 
@@ -29,24 +31,21 @@ def run_all_tests():
     encoded_spark_df = spark.createDataFrame(encoded_pd_df)
     print("Encoded spark data frame : ")
     encoded_spark_df.show()
-    for id in range(num_routes):
-        print("df for id = ", id)
-        encoded_spark_df.filter(encoded_spark_df.route_id == id).show()
-
 
     clustering_settings = {
         'clustering_algorithm': 'kmodes',
         'k_values': [2, 3],
         'max_iterations': 2,
-        'distance_function': scipy.spatial.distance.jaccard,
+        'distance_function': route_distance,
         'debug_flag': False,
+        'num_routes': num_routes
     }
 
     print("Running run_clustering().")
     centroids = run_clustering(
         spark_instance=spark,
         clustering_settings=clustering_settings,
-        data=data,
+        data=encoded_spark_df,
         )
     print("The centroids are given by: ", centroids)
 

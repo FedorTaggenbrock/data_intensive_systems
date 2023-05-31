@@ -2,6 +2,7 @@ from typing import List
 from pyspark.sql.functions import udf
 from pyspark.sql.types import ArrayType, StringType
 import numpy as np
+import random
 from statistics import mode
 
 from pyspark.sql import SparkSession
@@ -9,6 +10,7 @@ import scipy
 
 from pyspark import RDD
 from pyspark import SparkContext
+from pyspark.sql import DataFrame
 
 # Parameter search imports
 from pyspark.ml import Estimator, Model
@@ -17,7 +19,7 @@ from pyspark.ml.tuning import ParamGridBuilder, CrossValidator
 
 from pyspark.sql import SparkSession
 
-def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data: RDD) -> list[tuple]:
+def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data: DataFrame) -> list[tuple]:
     '''Define variables to store results.'''
     # E.g. for kmodes: [(predicted_centroids, (k, init_mode)), ...]
     results = []
@@ -33,8 +35,7 @@ def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data
                 data=data,
                 distance=clustering_settings['distance_function'],
                 k=current_k,
-                max_iterations=clustering_settings['max_iterations'],
-                debug_flag=clustering_settings['debug_flag']
+                clustering_settings=clustering_settings
             )
 
             # Store the settings, model, and metrics
@@ -45,17 +46,7 @@ def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data
     return results
 
 
-
-# Define a custom distance function
-def jaccard_distance(a, b):
-    a = np.array(a)
-    b = np.array(b)
-    intersection = np.sum(a & b)
-    union = np.sum(a | b)
-    return 1 - (intersection / union)
-
-
-def kModes_v2(spark_instance: SparkSession, distance, data: RDD, k: int, max_iterations: int, debug_flag=False) -> list:
+def kModes_v2(spark_instance: SparkSession, distance, data: DataFrame, k: int, clustering_settings) -> list:
     """
     Perform k-modes clustering on the given data. Assumes only one-hot encoded data?
 
@@ -68,12 +59,21 @@ def kModes_v2(spark_instance: SparkSession, distance, data: RDD, k: int, max_ite
     Returns:
         list: A list of the centroids of the clusters.
     """
+
     # Initialize centroids randomly
-    centroids = [tuple(x) for x in data.takeSample(withReplacement=False, num=k)]
+
+    centroid_ids = random.sample(range(clustering_settings["num_routes"]), k)
+
+    centroids = [data.filter("route_id" == id) for id in centroid_ids]
+    if clustering_settings["debug_flag"]:
+        print("starting centroids = ")
+        for centroid in centroids:
+            centroid.show()
+        print("done")
 
     # Iterate until convergence or until the maximum number of iterations is reached
-    for i in range(max_iterations):
-        if debug_flag: print("centroids = ", centroids)
+    for i in range(clustering_settings["max_iterations"]):
+        if clustering_settings["debug_flag"]: print("centroids = ", centroids)
 
         # Assign each point to the closest centroid
         clusters = data.map(lambda point: (min(centroids, key=lambda centroid: distance(point, centroid)), point)).groupByKey()
