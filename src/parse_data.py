@@ -83,7 +83,7 @@ def encode_data(spark: SparkSession, df: pd.DataFrame):
 
     spark_df = spark.createDataFrame(result)
     from_to_cols = [col for col in spark_df.columns if col not in ['route_id', 'product']]
-    spark_df = spark_df.groupBy("route_id").agg(*[collect_list(c) for c in from_to_cols])
+    spark_df = spark_df.groupBy("route_id").agg(*[collect_list(c).alias(c) for c in from_to_cols])
 
     print("encoded spark df")
     spark_df.show(truncate=False)
