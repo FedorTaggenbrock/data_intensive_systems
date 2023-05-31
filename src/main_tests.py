@@ -12,21 +12,16 @@ from pyspark import SparkContext
 
 from clustering import run_clustering
 
+from parse_data import parse_json_data
+
 def run_all_tests():
     #main function which runs all other tests imported from different files
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
-    data = spark.sparkContext.parallelize([
-            [1,1,0,1,0],
-            [1,1,1,1,0],
-            [0,0,1,0,1],
-            [1,0,0,0,1],
-            [1,0,0,1,0],
-            [1,1,1,1,0],
-            [0,1,1,0,1],
-            [1,0,0,1,0],
-        ])
-
     print("Initialized Spark.")
+
+    data = parse_json_data()
+    print("Using the following data: ")
+    data.show()
 
     clustering_settings = {
         'clustering_algorithm': 'kmodes',
