@@ -32,6 +32,7 @@ def parse_json_data(json_path='data_intensive_systems/data/ex_example_route.json
     # contains an unseen merchandise, that column for all the previous routes will be filled with NaN.
     df = pd.DataFrame(df_list)
     df.fillna(0, inplace=True)
+    print(df.columns)
 
     # Reorder df cols to have route_id,to,from, as the first columns
     cols = ['route_id', 'from', 'to'] + [col for col in df if col not in ['id', 'from', 'to']]
