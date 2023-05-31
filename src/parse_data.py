@@ -3,7 +3,7 @@ import pandas as pd
 import inspect
 from pyspark.sql.functions import collect_list
 from pyspark.sql import SparkSession
-def parse_json_data(json_path='data_intensive_systems/data/ex_example_route.json'):
+def parse_json_data(json_path='data_intensive_systems/data/ex_example_route.json', debug_flag = False):
     """Parse the data from the json file to a pandas df."""
 
     # Load the json data from file into string
@@ -41,7 +41,7 @@ def parse_json_data(json_path='data_intensive_systems/data/ex_example_route.json
     df = df[cols]
     return df, num_routes
 
-def encode_data(spark: SparkSession, df: pd.DataFrame):
+def encode_data(spark: SparkSession, df: pd.DataFrame, debug_flag =False):
     """
     Encode data to be used for clustering. One-hot encode the cities.
     
@@ -64,6 +64,8 @@ def encode_data(spark: SparkSession, df: pd.DataFrame):
 
     # Get a list of all columns except for route_id, from, to, from_to, and to_from
     product_cols = [col for col in df.columns if col not in ['route_id', 'from_to']]
+
+    print("product_cols", product_cols)
 
     # Melt the product columns into a single column
     melted_df = df.melt(id_vars=['route_id', 'from_to'], value_vars=product_cols, var_name='product',
