@@ -60,7 +60,7 @@ def encode_data(df: pd.DataFrame,
 
     # Create a new column with the combined 'from' and 'to' values
     df['from_to'] = df['from'] + '-' + df['to']
-    df.drop(['from', 'to'])
+    df.drop(columns = ['from', 'to'])
     print("df1", df)
 
     # Get a list of all columns except for route_id, from, to, from_to, and to_from
