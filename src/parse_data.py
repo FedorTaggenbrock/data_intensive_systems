@@ -60,18 +60,17 @@ def encode_data(df: pd.DataFrame,
 
     # Create a new column with the combined 'from' and 'to' values
     df['from_to'] = df['from'] + '-' + df['to']
-
-    # Create a new column with the combined 'to' and 'from' values
-    df['to_from'] = df['to'] + '-' + df['from']
-
+    df.drop(['from', 'to'])
     print("df1", df)
 
     # Get a list of all columns except for route_id, from, to, from_to, and to_from
-    product_cols = [col for col in df.columns if col not in ['route_id', 'from', 'to', 'from_to', 'to_from']]
+    product_cols = [col for col in df.columns if col not in ['route_id', 'from_to']]
 
     # Melt the product columns into a single column
-    melted_df = df.melt(id_vars=['route_id', 'from_to', 'to_from'], value_vars=product_cols, var_name='product',
+    melted_df = df.melt(id_vars=['route_id', 'from_to'], value_vars=product_cols, var_name='product',
                         value_name='value')
+
+    print("melted_df", melted_df)
 
     # Pivot the table to have one row per route_id and columns for each from_to and to_from combination
     result = pd.pivot_table(melted_df, index=['route_id', 'product'], columns=['from_to', 'to_from'], values='value',
