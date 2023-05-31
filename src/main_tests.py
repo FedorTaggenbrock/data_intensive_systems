@@ -26,7 +26,7 @@ def run_all_tests():
     pd_df, num_routes = parse_json_data()
     spark_df = spark.createDataFrame(pd_df)
 
-    encoded_pd_df = encode_data(pd_df, encode_style='nested')
+    encoded_spark_df = encode_data(pd_df)
 
 
     clustering_settings = {
