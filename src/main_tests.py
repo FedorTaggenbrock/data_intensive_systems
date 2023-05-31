@@ -25,7 +25,7 @@ def run_all_tests():
     pd_df, num_routes = parse_json_data()
     spark_df = spark.createDataFrame(pd_df)
 
-    encoded_pd_df = encode_data(pd_df, encode_style='all')
+    encoded_pd_df = encode_data(pd_df, encode_style='nested')
     encoded_spark_df = spark.createDataFrame(encoded_pd_df)
 
     clustering_settings = {
@@ -43,15 +43,15 @@ def run_all_tests():
         print("Encoded spark data frame : ")
         encoded_spark_df.show()
 
-    print("Running run_clustering().")
-    centroids = run_clustering(
-        spark_instance=spark,
-        clustering_settings=clustering_settings,
-        data=encoded_spark_df,
-        )
-    print("The centroids are given by: ", centroids)
-
-    print("Start evaluating clusters")
+    # print("Running run_clustering().")
+    # centroids = run_clustering(
+    #     spark_instance=spark,
+    #     clustering_settings=clustering_settings,
+    #     data=encoded_spark_df,
+    #     )
+    # print("The centroids are given by: ", centroids)
+    #
+    # print("Start evaluating clusters")
 
 
     return

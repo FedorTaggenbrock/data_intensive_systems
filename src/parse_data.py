@@ -55,29 +55,30 @@ def encode_data(df: pd.DataFrame,
     Returns:
     - pandas DataFrame containing the encoded data.
     """
-    
-    # Default option
-    if encode_style == 'all':
-        if one_hot_encode:
-            # One-hot encode the cities
-            df = pd.get_dummies(df, columns=['from', 'to'])
+    print("start df encoding")
+    print(df)
 
-        # Scale the one-hot features appropriately; TODO
-        # To do this, first select all one-hot columns.
-        # one_hot_cols = [col for col in df.columns if col.startswith('from_') or col.startswith('to_')]
-
-
-    elif encode_style == 'num_only':
-        # Drop categorical columns
-        df.drop(columns=['from', 'to'], inplace=True)
-    elif encode_style == 'cat_only':
-        # Drop numerical columns (i.e. keep only the categorical columns)
-        df.drop(columns=[col for col in df.columns if col not in ['from', 'to']], inplace=True)
-        if one_hot_encode:
-            # One-hot encode the cities
-            df = pd.get_dummies(df, columns=['from', 'to'])
-    else:
-        raise NotImplementedError(f'encode_style "{encode_style}" not implemented in function "{inspect.currentframe().f_code.co_name}."')
+    # if encode_style == 'all':
+    #     if one_hot_encode:
+    #         # One-hot encode the cities
+    #         df = pd.get_dummies(df, columns=['from', 'to'])
+    #
+    #     # Scale the one-hot features appropriately;
+    #     # To do this, first select all one-hot columns.
+    #     # one_hot_cols = [col for col in df.columns if col.startswith('from_') or col.startswith('to_')]
+    #
+    #
+    # elif encode_style == 'num_only':
+    #     # Drop categorical columns
+    #     df.drop(columns=['from', 'to'], inplace=True)
+    # elif encode_style == 'cat_only':
+    #     # Drop numerical columns (i.e. keep only the categorical columns)
+    #     df.drop(columns=[col for col in df.columns if col not in ['from', 'to']], inplace=True)
+    #     if one_hot_encode:
+    #         # One-hot encode the cities
+    #         df = pd.get_dummies(df, columns=['from', 'to'])
+    # else:
+    #     raise NotImplementedError(f'encode_style "{encode_style}" not implemented in function "{inspect.currentframe().f_code.co_name}."')
 
     return df
 
