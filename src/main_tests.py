@@ -11,6 +11,7 @@ from distance_function import route_distance
 
 from pyspark import RDD
 from pyspark import SparkContext
+from pyspark.sql.functions import collect_list
 
 from clustering import run_clustering
 
@@ -26,7 +27,7 @@ def run_all_tests():
     spark_df = spark.createDataFrame(pd_df)
 
     encoded_pd_df = encode_data(pd_df, encode_style='nested')
-    encoded_spark_df = spark.createDataFrame(encoded_pd_df)
+
 
     clustering_settings = {
         'clustering_algorithm': 'kmodes',
@@ -41,7 +42,7 @@ def run_all_tests():
         print("Spark data frame : ")
         spark_df.show()
         print("Encoded spark data frame : ")
-        encoded_spark_df.show()
+        encoded_spark_df.show(truncate=False)
 
     # print("Running run_clustering().")
     # centroids = run_clustering(

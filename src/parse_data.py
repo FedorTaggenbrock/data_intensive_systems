@@ -1,7 +1,8 @@
 import json
 import pandas as pd
 import inspect
-
+from pyspark.sql.functions import collect_list
+from pyspark.sql import SparkSession
 def parse_json_data(json_path='data_intensive_systems/data/ex_example_route.json'):
     """Parse the data from the json file to a pandas df."""
 
@@ -40,9 +41,7 @@ def parse_json_data(json_path='data_intensive_systems/data/ex_example_route.json
     df = df[cols]
     return df, num_routes
 
-def encode_data(df: pd.DataFrame,
-                one_hot_encode: bool = True,
-                encode_style: str = 'all') -> pd.DataFrame:
+def encode_data(spark: SparkSession, df: pd.DataFrame):
     """
     Encode data to be used for clustering. One-hot encode the cities.
     
@@ -79,10 +78,17 @@ def encode_data(df: pd.DataFrame,
     # Reset the index and fill NaN values with 0
     result = result.reset_index().fillna(0)
 
-    print("result")
+    print("pd result")
     print(result)
 
-    return result
+    spark_df = spark.createDataFrame(result)
+    from_to_cols = [col for col in df.columns if col not in ['route_id', 'product']]
+    spark_df = spark_df.groupBy("route_id").agg(*[collect_list(c) for c in from_to_cols])
+
+    print("encoded spark df")
+    spark_df.show(truncate=False)
+
+    return spark_df
 
     # if encode_style == 'all':
     #     if one_hot_encode:
