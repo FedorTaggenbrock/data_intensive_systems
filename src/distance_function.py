@@ -2,8 +2,7 @@ from pyspark.sql.functions import udf
 from pyspark.sql.types import FloatType
 
 def route_distance(route1, route2):
-    print("testing")
-    columns = route1.schema.names
+    columns = route1.__fields__
     intersection = 0
     union = 0
     for column in columns:
