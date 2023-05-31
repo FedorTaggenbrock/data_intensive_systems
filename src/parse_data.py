@@ -77,14 +77,15 @@ def encode_data(spark: SparkSession, df: pd.DataFrame, debug_flag =False):
     # Pivot the table to have one row per route_id and columns for each from_to and to_from combination
     result = pd.pivot_table(melted_df, index=['route_id', 'product'], columns=['from_to'], values='value',
                             aggfunc='first')
-    product_list = result.loc[:,"product"]
-    print(product_list)
-
     # Reset the index and fill NaN values with 0
     result = result.reset_index().fillna(0)
 
     print("pd result")
     print(result)
+
+    product_list = result.loc[:,"product"]
+    print(product_list)
+
 
     spark_df = spark.createDataFrame(result)
     from_to_cols = [col for col in spark_df.columns if col not in ['route_id', 'product']]
