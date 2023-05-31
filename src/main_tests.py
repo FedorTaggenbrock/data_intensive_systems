@@ -34,14 +34,20 @@ def run_all_tests():
     clustering_settings["num_routes"] = num_routes
 
     encoded_spark_df, product_list = encode_data(spark, pd_df, clustering_settings["debug_flag"])
+    encoded_spark_rdd = encoded_spark_df.rdd
 
-    print("Running run_clustering().")
-    centroids = run_clustering(
-        spark_instance=spark,
-        clustering_settings=clustering_settings,
-        data=encoded_spark_df.rdd,
-        )
-    print("The centroids are given by: ", centroids)
+    two_routes = encoded_spark_rdd.take(2)
+    print(two_routes)
+    print(route_distance(two_routes[0], two_routes[1]))
+
+
+    # print("Running run_clustering().")
+    # centroids = run_clustering(
+    #     spark_instance=spark,
+    #     clustering_settings=clustering_settings,
+    #     data=encoded_spark_rdd
+    #     )
+    # print("The centroids are given by: ", centroids)
 
     # print("Start evaluating clusters")
 
