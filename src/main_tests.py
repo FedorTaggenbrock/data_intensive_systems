@@ -30,6 +30,7 @@ def run_all_tests():
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
     print("Initialized Spark.")
 
+    #Opletten dat bij het parsen de hoeveelheden van stad A-> stad B wel goed samengevoegd worden. Zie nu twee keer dezelfde from->to staan bij route 1 namelijk.
     pd_df, num_routes = parse_json_data()
     clustering_settings["num_routes"] = num_routes
 
