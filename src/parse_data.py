@@ -64,17 +64,21 @@ def encode_data(df: pd.DataFrame,
     # Create a new column with the combined 'to' and 'from' values
     df['to_from'] = df['to'] + '-' + df['from']
 
-    # Create a list of the product columns
-    product_cols = ['eggs', 'salt', 'carrots', 'popcorn', 'lettuce']
+    print("df1", df)
 
-    # Create a new column with the values of the products as a list
-    df['products'] = df[product_cols].values.tolist()
+    # Get a list of all columns except for route_id, from, to, from_to, and to_from
+    product_cols = [col for col in df.columns if col not in ['route_id', 'from', 'to', 'from_to', 'to_from']]
+
+    # Melt the product columns into a single column
+    melted_df = df.melt(id_vars=['route_id', 'from_to', 'to_from'], value_vars=product_cols, var_name='product',
+                        value_name='value')
 
     # Pivot the table to have one row per route_id and columns for each from_to and to_from combination
-    result = pd.pivot_table(df, index='route_id', columns=['from_to', 'to_from'], values='products', aggfunc='first')
+    result = pd.pivot_table(melted_df, index=['route_id', 'product'], columns=['from_to', 'to_from'], values='value',
+                            aggfunc='first')
 
-    # Reset the index and fill NaN values with empty lists
-    result = result.reset_index().fillna({col: [] for col in result.columns if col != 'route_id'})
+    # Reset the index and fill NaN values with 0
+    result = result.reset_index().fillna(0)
 
     print(result)
 
