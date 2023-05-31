@@ -2,7 +2,7 @@ import json
 import pandas as pd
 import inspect
 
-def parse_json_data(json_path='src/ex_example_route.json'):
+def parse_json_data(json_path='data_intensive_systems/data/ex_example_route.json'):
     """Parse the data from the json file to a pandas df."""
 
     # Load the json data from file into string
