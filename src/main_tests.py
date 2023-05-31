@@ -19,7 +19,9 @@ def run_all_tests():
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
     print("Initialized Spark.")
 
-    data = parse_json_data()
+    pd_df = parse_json_data()
+    data = spark.createDataFrame(pd_df)
+
     print("Using the following data: ")
     data.show()
 
