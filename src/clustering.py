@@ -16,6 +16,7 @@ from pyspark.sql import DataFrame
 from pyspark.ml import Estimator, Model
 from pyspark.ml.param import Param, Params
 from pyspark.ml.tuning import ParamGridBuilder, CrossValidator
+from distance_function import route_distance
 
 from pyspark.sql import SparkSession
 
