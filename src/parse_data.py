@@ -60,7 +60,7 @@ def encode_data(df: pd.DataFrame,
 
     # Create a new column with the combined 'from' and 'to' values
     df['from_to'] = df['from'] + '-' + df['to']
-    df.drop(columns = ['from', 'to'])
+    df = df.drop(columns = ['from', 'to'])
     print("df1", df)
 
     # Get a list of all columns except for route_id, from, to, from_to, and to_from
@@ -70,11 +70,14 @@ def encode_data(df: pd.DataFrame,
     melted_df = df.melt(id_vars=['route_id', 'from_to'], value_vars=product_cols, var_name='product',
                         value_name='value')
 
-    print("melted_df", melted_df)
+    print("melted_df")
+    print(melted_df)
 
     # Pivot the table to have one row per route_id and columns for each from_to and to_from combination
-    result = pd.pivot_table(melted_df, index=['route_id', 'product'], columns=['from_to', 'to_from'], values='value',
+    result = pd.pivot_table(melted_df, index=['route_id', 'product'], columns=['from_to'], values='value',
                             aggfunc='first')
+    print("result")
+    print(result)
 
     # Reset the index and fill NaN values with 0
     result = result.reset_index().fillna(0)
