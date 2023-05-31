@@ -58,6 +58,31 @@ def encode_data(df: pd.DataFrame,
     print("start df encoding")
     print(df)
 
+    import pandas as pd
+
+    # Assuming the dataframe is named df
+    df = pd.read_csv('data.csv')
+
+    # Create a new column with the combined 'from' and 'to' values
+    df['from_to'] = df['from'] + '-' + df['to']
+
+    # Create a new column with the combined 'to' and 'from' values
+    df['to_from'] = df['to'] + '-' + df['from']
+
+    # Create a list of the product columns
+    product_cols = ['eggs', 'salt', 'carrots', 'popcorn', 'lettuce']
+
+    # Create a new column with the values of the products as a list
+    df['products'] = df[product_cols].values.tolist()
+
+    # Pivot the table to have one row per route_id and columns for each from_to and to_from combination
+    result = pd.pivot_table(df, index='route_id', columns=['from_to', 'to_from'], values='products', aggfunc='first')
+
+    # Reset the index and fill NaN values with empty lists
+    result = result.reset_index().fillna({col: [] for col in result.columns if col != 'route_id'})
+
+    print(result)
+
     # if encode_style == 'all':
     #     if one_hot_encode:
     #         # One-hot encode the cities
