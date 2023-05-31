@@ -124,43 +124,6 @@ def clustering_test1():
     return centroids
 
 
-def clustering_test2():
-    # Testing code
-    print("Running clustering_test2().")
-    spark = SparkSession.builder.appName("Clustering").getOrCreate()
-    data = spark.sparkContext.parallelize([
-            [1,1,0,1,0],
-            [1,1,1,1,0],
-            [0,0,1,0,1],
-            [1,0,0,0,1],
-            [1,0,0,1,0],
-            [1,1,1,1,0],
-            [0,1,1,0,1],
-            [1,0,0,1,0],
-        ])
-    
-    print("Initialized Spark. Start clustering.")
-
-    clustering_settings = {
-        'clustering_algorithm': 'kmodes',
-        'k_values': [2, 3],
-        'max_iterations': 2,
-        'distance_function': scipy.spatial.distance.jaccard,
-        'debug_flag': False,
-    }
-    centroids = run_clustering(
-        spark_instance=spark,
-        clustering_settings=clustering_settings,
-        data=data,
-        )
-
-    spark.stop()
-
-    print("Pass clustering_test2().")
-    
-    return centroids
-
-
 if __name__ == '__main__':
     # clustering_test1()
     clustering_test2()	
