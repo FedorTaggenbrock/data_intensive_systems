@@ -87,13 +87,24 @@
             }
          },
          {
+            "from": "Zwolle",
+            "to": "Enschede",
+            "merchandise": {
+               "soda": 8,
+               "vinegar": 16,
+               "potatoes": 17,
+               "chips": 6
+            }
+         },
+         {
             "from":"Zwolle",
-            "to":"Enschede",
+            "to":"Tilburg",
             "merchandise":{
-               "soda":8,
-               "vinegar":16,
-               "potatoes":17,
-               "chips":6
+               "apples":11,
+               "tomatoes":14,
+               "water":16,
+               "flour":6,
+               "oil":14
             }
          }
       ]
