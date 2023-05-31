@@ -70,26 +70,26 @@ def kModes_v2(spark_instance: SparkSession, distance, data: DataFrame, k: int, c
             centroid.show()
         print("done")
 
-    # Iterate until convergence or until the maximum number of iterations is reached
-    for i in range(clustering_settings["max_iterations"]):
-        if clustering_settings["debug_flag"]: print("centroids = ", centroids)
-
-        # Assign each point to the closest centroid
-        clusters = data.map(lambda point: (min(centroids, key=lambda centroid: distance(point, centroid)), point)).groupByKey()
-
-        #print("clusters1 = ", clusters.collect())
-
-        #Compute new centroids as the mode of the points in each cluster
-        newCentroids = clusters.mapValues(lambda arrays: tuple([mode(x) for x in zip(*arrays)]) ).collect()
-
-        #print("newCentroids = ", newCentroids)
-
-        # Update centroids
-        for oldCentroid, newCentroid in newCentroids:
-            index = centroids.index(oldCentroid)
-            centroids[index] = newCentroid
-
-    return [list(x) for x in centroids]
+    # # Iterate until convergence or until the maximum number of iterations is reached
+    # for i in range(clustering_settings["max_iterations"]):
+    #     if clustering_settings["debug_flag"]: print("centroids = ", centroids)
+    #
+    #     # Assign each point to the closest centroid
+    #     clusters = data.map(lambda point: (min(centroids, key=lambda centroid: distance(point, centroid)), point)).groupByKey()
+    #
+    #     #print("clusters1 = ", clusters.collect())
+    #
+    #     #Compute new centroids as the mode of the points in each cluster
+    #     newCentroids = clusters.mapValues(lambda arrays: tuple([mode(x) for x in zip(*arrays)]) ).collect()
+    #
+    #     #print("newCentroids = ", newCentroids)
+    #
+    #     # Update centroids
+    #     for oldCentroid, newCentroid in newCentroids:
+    #         index = centroids.index(oldCentroid)
+    #         centroids[index] = newCentroid
+    #
+    # return [list(x) for x in centroids]
 
 
 
