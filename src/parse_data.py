@@ -55,13 +55,8 @@ def encode_data(df: pd.DataFrame,
     Returns:
     - pandas DataFrame containing the encoded data.
     """
-    print("start df encoding")
     print(df)
-
-    import pandas as pd
-
-    # Assuming the dataframe is named df
-    df = pd.read_csv('data.csv')
+    print("start df encoding")
 
     # Create a new column with the combined 'from' and 'to' values
     df['from_to'] = df['from'] + '-' + df['to']
