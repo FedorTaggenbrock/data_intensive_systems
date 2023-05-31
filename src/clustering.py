@@ -73,7 +73,7 @@ def kModes_v2(spark_instance: SparkSession, distance, data: RDD, k: int, cluster
 
         #print("clusters1 = ", clusters.collect())
 
-        #Compute new centroids as the mode of the points in each cluster
+        #Compute new centroids as the mode of the points in each cluster.
         newCentroids = clusters.mapValues(lambda arrays: tuple([mode(x) for x in zip(*arrays)]) ).collect()
 
         #print("newCentroids = ", newCentroids)

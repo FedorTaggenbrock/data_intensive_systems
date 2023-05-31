@@ -87,6 +87,7 @@ def encode_data(spark: SparkSession, df: pd.DataFrame, debug_flag =False):
 
     return spark_df, product_list
 
+
     # if encode_style == 'all':
     #     if one_hot_encode:
     #         # One-hot encode the cities
@@ -108,21 +109,18 @@ def encode_data(spark: SparkSession, df: pd.DataFrame, debug_flag =False):
     #         df = pd.get_dummies(df, columns=['from', 'to'])
     # else:
     #     raise NotImplementedError(f'encode_style "{encode_style}" not implemented in function "{inspect.currentframe().f_code.co_name}."')
-
-
-
-
-def parse_test():
-    # Write comment that says this is only used for testing
-    df = parse_json_data()
-    df = encode_data(df, encode_style='all_')
-
-    # Print formatting
-    pd.set_option('expand_frame_repr', True)
-    pd.set_option('display.width', 100)
-    pd.set_option('display.max_columns', 100)
-
-    print(df.head())
-
-if __name__ == '__main__':
-    parse_test()
+    #
+    # def parse_test():
+    #     # Write comment that says this is only used for testing
+    #     df = parse_json_data()
+    #     df = encode_data(df, encode_style='all_')
+    #
+    #     # Print formatting
+    #     pd.set_option('expand_frame_repr', True)
+    #     pd.set_option('display.width', 100)
+    #     pd.set_option('display.max_columns', 100)
+    #
+    #     print(df.head())
+    #
+    # if __name__ == '__main__':
+    #     parse_test()
