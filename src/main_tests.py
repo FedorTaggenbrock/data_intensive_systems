@@ -37,10 +37,10 @@ def run_all_tests():
     encoded_spark_df, product_list = encode_data(spark, pd_df, clustering_settings["debug_flag"])
     encoded_spark_rdd = encoded_spark_df.rdd
 
-    two_routes = encoded_spark_rdd.take(2)
-    print(two_routes)
-    print(route_distance(two_routes[0], two_routes[1]))
-
+    if clustering_settings["debug_flag"]:
+        two_routes = encoded_spark_rdd.take(2)
+        print("The distance between route 0 and route 1 is given by:")
+        print(route_distance(two_routes[0], two_routes[1]))
 
     # print("Running run_clustering().")
     # centroids = run_clustering(

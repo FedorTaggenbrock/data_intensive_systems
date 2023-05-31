@@ -97,14 +97,25 @@
             }
          },
          {
-            "from":"Zwolle",
-            "to":"Tilburg",
+            "from":"Tilburg",
+            "to":"Leeuwarden",
             "merchandise":{
-               "apples":11,
-               "tomatoes":14,
-               "water":16,
-               "flour":6,
-               "oil":14
+               "cereal":15,
+               "cookies":15,
+               "yogurt":9,
+               "beef":7,
+               "soda":14
+            }
+         },
+         {
+            "from":"Leeuwarden",
+            "to":"Dordrecht",
+            "merchandise":{
+               "jam":8,
+               "icecream":10,
+               "cereal":10,
+               "beef":11,
+               "popcorn":6
             }
          }
       ]
