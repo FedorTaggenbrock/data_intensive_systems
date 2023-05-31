@@ -37,7 +37,7 @@ def run_all_tests():
 
     encoded_rdd = encoded_spark_df.rdd
 
-    print(encoded_rdd.takeSample(num=2).collect())
+    print(encoded_rdd.takeSample(withReplacement=True, num=2).collect())
 
     print("Running run_clustering().")
     centroids = run_clustering(
