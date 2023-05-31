@@ -76,13 +76,13 @@ def encode_data(df: pd.DataFrame,
     # Pivot the table to have one row per route_id and columns for each from_to and to_from combination
     result = pd.pivot_table(melted_df, index=['route_id', 'product'], columns=['from_to'], values='value',
                             aggfunc='first')
-    print("result")
-    print(result)
-
     # Reset the index and fill NaN values with 0
     result = result.reset_index().fillna(0)
 
+    print("result")
     print(result)
+
+    return result
 
     # if encode_style == 'all':
     #     if one_hot_encode:
@@ -106,7 +106,7 @@ def encode_data(df: pd.DataFrame,
     # else:
     #     raise NotImplementedError(f'encode_style "{encode_style}" not implemented in function "{inspect.currentframe().f_code.co_name}."')
 
-    return df
+
 
 
 def parse_test():
