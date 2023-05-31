@@ -24,7 +24,7 @@ def run_all_tests():
     print("Spark data frame : ")
     spark_df.show()
 
-    encoded_pd_df = encode_data(pd_df, encode_style='all_')
+    encoded_pd_df = encode_data(pd_df, encode_style='all')
 
     encoded_spark_df = spark.createDataFrame(encoded_pd_df)
     print("Encoded spark data frame : ")
