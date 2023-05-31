@@ -12,7 +12,7 @@ from pyspark import SparkContext
 
 from clustering import run_clustering
 
-from parse_data import parse_json_data
+from parse_data import parse_json_data, encode_data
 
 def run_all_tests():
     #main function which runs all other tests imported from different files
@@ -20,10 +20,16 @@ def run_all_tests():
     print("Initialized Spark.")
 
     pd_df = parse_json_data()
-    data = spark.createDataFrame(pd_df)
+    spark_df = spark.createDataFrame(pd_df)
+    print("Spark data frame : ")
+    spark_df.show()
 
-    print("Using the following data: ")
-    data.show()
+    encoded_pd_df = encode_data(pd_df, encode_style='all_')
+
+    encoded_spark_df = spark.createDataFrame(encoded_pd_df)
+    print("Encoded spark data frame : ")
+    encoded_spark_df.show()
+
 
     clustering_settings = {
         'clustering_algorithm': 'kmodes',
