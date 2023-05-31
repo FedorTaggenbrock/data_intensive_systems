@@ -3,6 +3,7 @@ from pyspark.sql.types import FloatType
 
 def route_distance(route1, route2):
     columns = route1.__fields__[1:]
+    print(columns)
     intersection = 0
     union = 0
     for column in columns:
@@ -12,10 +13,3 @@ def route_distance(route1, route2):
                 intersection += 1
     return float(intersection) / union if union != 0 else 0.0
 
-
-def jaccard_distance(a, b):
-    a = np.array(a)
-    b = np.array(b)
-    intersection = np.sum(a & b)
-    union = np.sum(a | b)
-    return 1 - (intersection / union)
