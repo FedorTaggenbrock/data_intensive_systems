@@ -35,7 +35,7 @@ def parse_json_data(json_path='data_intensive_systems/data/ex_example_route.json
     print(df.columns)
 
     # Reorder df cols to have route_id,to,from, as the first columns
-    cols = ['route_id', 'from', 'to'] + [col for col in df if col not in ['id', 'from', 'to']]
+    cols = ['route_id', 'from', 'to'] + [col for col in df if col not in ['route_id', 'from', 'to']]
     df = df[cols]
     print(df.columns)
     print(df[0])
