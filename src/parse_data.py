@@ -47,54 +47,47 @@ def encode_data(spark: SparkSession, df: pd.DataFrame, debug_flag =False):
     
     Args:
     - df: pandas DataFrame containing the data to be encoded
-    - encode_style: Indicates in what style to generate the data. Used to e.g. only keep categorical features; mostly for testing.
-                        Possible values: 'all', 'num_only', 'cat_only'.
-    - one_hot_encode: bool indicating whether to one-hot encode the cities or not.
-    
     Returns:
-    - pandas DataFrame containing the encoded data.
+    - Spark DataFrame containing the encoded data.
     """
-    print(df)
-    print("start df encoding")
+    if debug_flag:
+        original_spark_df = spark.createDataFrame(df)
+        print("spark dataframe before encoding")
+        original_spark_df.show()
 
-    # Create a new column with the combined 'from' and 'to' values
+    # Create a new column with the combined 'from' and 'to' values and remove the original from, to columns.
     df['from_to'] = df['from'] + '-' + df['to']
     df = df.drop(columns = ['from', 'to'])
-    print("df1", df)
 
-    # Get a list of all columns except for route_id, from, to, from_to, and to_from
+    # Get a list of all columns except for route_id and from_to
     product_cols = [col for col in df.columns if col not in ['route_id', 'from_to']]
-
-    print("product_cols", product_cols)
 
     # Melt the product columns into a single column
     melted_df = df.melt(id_vars=['route_id', 'from_to'], value_vars=product_cols, var_name='product',
                         value_name='value')
 
-    print("melted_df")
-    print(melted_df)
-
-    # Pivot the table to have one row per route_id and columns for each from_to and to_from combination
+    # Pivot the table to have one row per route_id and columns for each from_to combination
     result = pd.pivot_table(melted_df, index=['route_id', 'product'], columns=['from_to'], values='value',
                             aggfunc='first')
     # Reset the index and fill NaN values with 0
     result = result.reset_index().fillna(0)
 
-    print("pd result")
-    print(result)
-
     product_list = result.loc[:,"product"]
-    print(product_list)
-
 
     spark_df = spark.createDataFrame(result)
+
+    #Combine all the rows with the same route_id in such a way that all the different values per column are combined into a list.
     from_to_cols = [col for col in spark_df.columns if col not in ['route_id', 'product']]
     spark_df = spark_df.groupBy("route_id").agg(*[collect_list(c).alias(c) for c in from_to_cols])
 
-    print("encoded spark df")
-    spark_df.show(truncate=False)
+    if debug_flag:
+        print("panda's dataframe:")
+        print(result)
+        print("Spark dataframe after encoding:")
+        spark_df.show(truncate=False)
+        print("product list:", product_list)
 
-    return spark_df
+    return spark_df, product_list
 
     # if encode_style == 'all':
     #     if one_hot_encode:

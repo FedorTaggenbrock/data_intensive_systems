@@ -33,11 +33,7 @@ def run_all_tests():
     pd_df, num_routes = parse_json_data()
     clustering_settings["num_routes"] = num_routes
 
-    if clustering_settings["debug_flag"]:
-        spark_df = spark.createDataFrame(pd_df)
-        spark_df.show()
-
-    encoded_spark_df = encode_data(spark, pd_df, clustering_settings["debug_flag"])
+    encoded_spark_df, product_list = encode_data(spark, pd_df, clustering_settings["debug_flag"])
 
 
 
