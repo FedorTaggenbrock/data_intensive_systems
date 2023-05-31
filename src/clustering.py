@@ -64,7 +64,7 @@ def kModes_v2(spark_instance: SparkSession, distance, data: DataFrame, k: int, c
 
     centroid_ids = random.sample(range(clustering_settings["num_routes"]), k)
 
-    centroids = [data.filter("route_id" == id) for id in centroid_ids]
+    centroids = [data.filter(data.route_id == id) for id in centroid_ids]
     if clustering_settings["debug_flag"]:
         print("starting centroids = ")
         for centroid in centroids:
