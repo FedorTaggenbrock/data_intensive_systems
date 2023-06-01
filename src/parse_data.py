@@ -83,7 +83,8 @@ def encode_data(spark: SparkSession, df: pd.DataFrame, debug_flag =False):
     if debug_flag:
         print("Spark dataframe after encoding:")
         spark_df.show(truncate=False)
-        print("product list:", product_list)
+        print("product list:")
+        print(product_list)
 
     return spark_df, product_list
 
