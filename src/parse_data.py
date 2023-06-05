@@ -1,7 +1,7 @@
 import json
 import pandas as pd
 import inspect
-from pyspark.sql.functions import collect_list, udf
+from pyspark.sql.functions import collect_list, udf, broadcast, lit
 from pyspark.sql import SparkSession
 from pyspark.sql.types import MapType, IntegerType, StringType
 
@@ -79,12 +79,12 @@ def encode_data(spark: SparkSession, df: pd.DataFrame, debug_flag =False):
 
     spark_df = spark.createDataFrame(result)
 
-    def list_to_dict(ls):
+    def list_to_dict(ls, product_list):
         return {product_list[index]: value for index, value in enumerate(ls)}
     #Combine all the rows with the same route_id in such a way that all the different values per column are combined into a list.
     from_to_cols = [col for col in spark_df.columns if col not in ['route_id', 'product']]
     list_to_dict_udf = udf(list_to_dict, MapType(IntegerType(), StringType()))
-    spark_df = spark_df.groupBy("route_id").agg(*[list_to_dict_udf(collect_list(c)).alias(c) for c in from_to_cols])
+    spark_df = spark_df.groupBy("route_id").agg(*[list_to_dict_udf(collect_list(c), lit(product_list)).alias(c) for c in from_to_cols])
 
     if debug_flag:
         print("Spark dataframe after encoding:")
@@ -93,7 +93,6 @@ def encode_data(spark: SparkSession, df: pd.DataFrame, debug_flag =False):
         # print(result)
         print("product list:")
         print(product_list)
-        print("obj", product_list[10])
 
     return spark_df, product_list
 
