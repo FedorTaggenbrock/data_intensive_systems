@@ -1,7 +1,7 @@
 from sklearn.decomposition import PCA
 
 def plot_routes(data):
-    print(data.shape)
+    print(data)
     pca = PCA(2)
 
     # Transform the data
