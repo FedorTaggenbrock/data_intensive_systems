@@ -14,8 +14,8 @@ def route_distance(route1, route2):
     print(columns)
     intersection = 0
     union = 0
-    for column in columns:
-        print(route1[column])
+    # for column in columns:
+    #     print(route1[column])
     #     trip1 = any(route1[column])
     #     trip2 = any(route2[column])
     #     if trip1 or trip2:
