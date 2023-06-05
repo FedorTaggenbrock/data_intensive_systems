@@ -35,6 +35,7 @@ def run_all_tests():
         'k_values': [2, 3],
         'max_iterations': 2,
         'debug_flag': True,
+        'distance_func' : route_distance
     }
 
     #main function which runs all other tests imported from different files
@@ -57,7 +58,7 @@ def run_all_tests():
     centroids = run_clustering(
         spark_instance=spark,
         clustering_settings=clustering_settings,
-        data=encoded_spark_rdd
+        data=encoded_spark_rdd,
         )
     print("The centroids are given by: ", centroids)
 
@@ -134,7 +135,7 @@ def kModes(spark_instance: SparkSession, data: RDD, k: int, clustering_settings)
 
         # Assign each point to the closest centroid
         clusters = data.map(
-            lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid)), point)).groupByKey()
+            lambda point: (min(centroids, key=lambda centroid: clustering_settings["distance_func"](point, centroid)), point)).groupByKey()
 
         print("clusters1 = ", clusters.collect())
 
