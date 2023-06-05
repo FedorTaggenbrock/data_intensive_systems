@@ -4,7 +4,8 @@ import inspect
 from pyspark.sql.functions import collect_list, udf, broadcast, lit
 from pyspark.sql import SparkSession
 from pyspark.sql.types import MapType, IntegerType, StringType
-
+from scipy.sparse import csr_matrix
+from scipy.spatial.distance import cdist
 
 def parse_json_data(json_path='data_intensive_systems/data/ex_example_route.json', debug_flag = False):
     """Parse the data from the json file to a pandas df."""
