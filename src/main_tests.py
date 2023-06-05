@@ -51,9 +51,11 @@ def run_all_tests():
     # print("The centroids are given by: ", centroids)
 
     # print("Start evaluating clusters")
-
-
     return
+
+
+
+
 
 if __name__ == "__main__":
     run_all_tests()
