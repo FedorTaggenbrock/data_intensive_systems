@@ -18,6 +18,8 @@ def route_distance(route1, route2):
     return float(intersection) / union if union != 0 else 0.0
 
 def dictionary_distance(dict1, dict2):
+    print("dict1",dict1)
+    print("set1", set(dict1))
     #This function computes the euclidean distance for dict representations of (sparse) vectors.
     #The get method is used to return a default value of 0 for keys that are not present in one of the dictionaries
     math.sqrt(np.sum( [dict1.get(product, 0) - dict2.get(product, 0) ** 2 for product in set(dict1) | set(dict2)] ))
