@@ -79,8 +79,8 @@ def encode_data(spark: SparkSession, df: pd.DataFrame, debug_flag =False):
 
     spark_df = spark.createDataFrame(result)
 
-    def list_to_dict(product_list, list):
-        return {product_list[i]: x for i, x in enumerate(list)}
+    def list_to_dict(ls):
+        return {product_list[index]: value for index, value in enumerate(ls)}
     #Combine all the rows with the same route_id in such a way that all the different values per column are combined into a list.
     from_to_cols = [col for col in spark_df.columns if col not in ['route_id', 'product']]
     list_to_dict_udf = udf(list_to_dict, MapType(IntegerType(), StringType()))
