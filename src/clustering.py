@@ -48,8 +48,8 @@ def kModes(spark_instance: SparkSession, data: RDD, k: int, clustering_settings)
     print("The distance between route 0 and route 1!! is given by:")
     print(route_distance(two_routes[0], two_routes[1]))
 
-    clusters = data.map(lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid)), point)).groupByKey()
-    print("clusters1 = ", clusters.collect())
+    #clusters = data.map(lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid)), point)).groupByKey()
+    #print("clusters1 = ", clusters.collect())
 
     return []
 
