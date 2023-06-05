@@ -92,8 +92,8 @@ def encode_data(spark: SparkSession, df: pd.DataFrame, debug_flag =False):
         print("product list:")
         print(product_list)
         print("elements 18, 38, 47 from product_list:", product_list[18], product_list[38], product_list[47])
-        route2_df = df[df["route_id"] == 2]
-        print("route 2:", route2_df)
+        print("route2:")
+        spark_df.select("*").where(df["route_id"] == 2).show()
 
     return spark_df, product_list
 
