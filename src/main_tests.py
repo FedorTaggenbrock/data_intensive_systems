@@ -11,7 +11,6 @@ def run_all_tests():
         'k_values': [2, 3],
         'max_iterations': 2,
         'debug_flag': True,
-        'distance_func' : route_distance
     }
 
     #main function which runs all other tests imported from different files
