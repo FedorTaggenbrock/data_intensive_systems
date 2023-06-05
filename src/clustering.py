@@ -20,7 +20,7 @@ from distance_function import route_distance
 
 from pyspark.sql import SparkSession
 
-def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data: DataFrame) -> list[tuple]:
+def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data: RDD) -> list[tuple]:
     '''Define variables to store results.'''
     # E.g. for kmodes: [(predicted_centroids, (k, init_mode)), ...]
     results = []
@@ -31,7 +31,7 @@ def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data
             # TODO in the future add other parameters here.
 
             # Run clustering with current parameters
-            predicted_centroids = kModes_v2(
+            predicted_centroids = kModes(
                 spark_instance=spark_instance,
                 data=data,
                 distance=clustering_settings['distance_function'],
@@ -47,7 +47,7 @@ def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data
     return results
 
 
-def kModes_v2(spark_instance: SparkSession, distance, data: RDD, k: int, clustering_settings) -> list:
+def kModes(spark_instance: SparkSession, distance, data: RDD, k: int, clustering_settings) -> list:
     """
     Perform k-modes clustering on the given data. Assumes only one-hot encoded data?
 
@@ -107,21 +107,17 @@ def clustering_test1():
 
     print("Initialized Spark. Start clustering.")
 
-    centroids = kModes_v2(
+    centroids = kModes(
         spark_instance=spark,
         distance = scipy.spatial.distance.jaccard,
         data=data,
         k=2,
-        max_iterations=2,
         )
     
     print("Finished clustering.")
     return centroids
 
 
-if __name__ == '__main__':
-    # clustering_test1()
-    clustering_test2()	
 
 
     
