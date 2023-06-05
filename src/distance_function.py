@@ -3,10 +3,9 @@ from pyspark.sql.types import FloatType
 import numpy as np
 
 def route_distance(route1, route2):
-
     intersection = np.logical_and(route1, route2).sum(axis=1)
     union = np.logical_or(route1, route2).sum(axis=1)
-    return 1 - intersection / union
+    return intersection / union
 
     #columns = route1.__fields__[1:]
     # intersection = 0
