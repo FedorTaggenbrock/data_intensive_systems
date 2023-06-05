@@ -71,7 +71,7 @@ def kModes_v2(spark_instance: SparkSession, distance, data: RDD, k: int, cluster
         # Assign each point to the closest centroid
         clusters = data.map(lambda point: (min(centroids, key=lambda centroid: distance(point, centroid)), point)).groupByKey()
 
-        #print("clusters1 = ", clusters.collect())
+        print("clusters1 = ", clusters.collect())
 
         #Compute new centroids as the mode of the points in each cluster.
         newCentroids = clusters.mapValues(lambda arrays: tuple([mode(x) for x in zip(*arrays)]) ).collect()

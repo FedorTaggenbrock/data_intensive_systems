@@ -14,7 +14,7 @@ def route_distance(route1, route2):
         if any(route1[column]) or any(route2[column]):
             union += 1
             if any(route1[column]) and any(route2[column]):
-                intersection += 1 #dictionary_distance(route1[column], route2[column])
+                intersection += dictionary_distance(route1[column], route2[column])
     return float(intersection) / union if union != 0 else 0.0
 
 def dictionary_distance(dict1, dict2):

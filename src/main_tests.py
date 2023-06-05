@@ -44,13 +44,13 @@ def run_all_tests():
         print("The distance between route 0 and route 1 is given by:")
         print(route_distance(two_routes[0], two_routes[1]))
 
-    # print("Running run_clustering().")
-    # centroids = run_clustering(
-    #     spark_instance=spark,
-    #     clustering_settings=clustering_settings,
-    #     data=encoded_spark_rdd
-    #     )
-    # print("The centroids are given by: ", centroids)
+    print("Running run_clustering().")
+    centroids = run_clustering(
+        spark_instance=spark,
+        clustering_settings=clustering_settings,
+        data=encoded_spark_rdd
+        )
+    print("The centroids are given by: ", centroids)
 
     # print("Start evaluating clusters")
     return
