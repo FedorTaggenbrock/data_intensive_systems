@@ -1,7 +1,7 @@
 from statistics import mode
 from pyspark import RDD
 from pyspark.sql import SparkSession
-from distance_function import route_distance
+# from distance_function import route_distance
 
 def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data: RDD) -> list[tuple]:
     '''Define variables to store results.'''
@@ -50,9 +50,11 @@ def kModes(spark_instance: SparkSession, data: RDD, k: int, clustering_settings)
         if clustering_settings["debug_flag"]:
             print("centroids = ", centroids)
 
-        two_routes = data.take(2)
-        print("The distance between route 0 and route 1!! is given by:")
-        print(route_distance(two_routes[0], two_routes[1]))
+    two_routes = data.take(2)
+    print("The distance between route 0 and route 1!! is given by:")
+    print(clustering_settings['distance_func'](two_routes[0], two_routes[1]))
+
+    return []
 
     #     # Assign each point to the closest centroid
     #     clusters = data.map(lambda point: (min(centroids, key=lambda centroid: clustering_settings["distance_func"](point, centroid)), point)).groupByKey()
