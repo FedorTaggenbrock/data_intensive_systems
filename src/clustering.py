@@ -50,16 +50,15 @@ def kModes(spark_instance: SparkSession, data: RDD, k: int, clustering_settings)
         if clustering_settings["debug_flag"]:
             print("centroids = ", centroids)
 
-    two_routes = data.take(2)
-    print("The distance between route 0 and route 1!! is given by:")
-    print(route_distance(two_routes[0], two_routes[1]))
-
-    return []
-
-    #     # Assign each point to the closest centroid
-    #     clusters = data.map(lambda point: (min(centroids, key=lambda centroid: clustering_settings["distance_func"](point, centroid)), point)).groupByKey()
+    # two_routes = data.take(2)
+    # print("The distance between route 0 and route 1!! is given by:")
+    # print(route_distance(two_routes[0], two_routes[1]))
     #
-    #     print("clusters1 = ", clusters.collect())
+    # return []
+
+        # Assign each point to the closest centroid
+        clusters = data.map(lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid)), point)).groupByKey()
+        print("clusters1 = ", clusters.collect())
     #
     #     #Compute new centroids as the mode of the points in each cluster.
     #     newCentroids = clusters.mapValues(lambda arrays: tuple([mode(x) for x in zip(*arrays)]) ).collect()
