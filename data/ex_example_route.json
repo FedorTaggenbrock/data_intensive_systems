@@ -147,7 +147,7 @@
             "from":"Leeuwarden",
             "to":"Dordrecht",
             "merchandise":{
-               "jam":8,
+               "cookies" : 100,
                "icecream":10,
                "cereal":10,
                "beef":11,
