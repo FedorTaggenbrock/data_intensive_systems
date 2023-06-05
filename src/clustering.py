@@ -1,6 +1,8 @@
 from statistics import mode
 from pyspark import RDD
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import udf
+
 from distance_function import route_distance
 
 def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data: RDD) -> list[tuple]:
@@ -48,8 +50,9 @@ def kModes(spark_instance: SparkSession, data: RDD, k: int, clustering_settings)
     print("Testing route_distance inside Kmodes")
     print(route_distance(two_routes[0], two_routes[1]))
     print("data:", data.collect())
-    map1 = data.map(lambda row: route_distance(two_routes[0], row))
-    print(map1.collect())
+    udf_dist = udf(route_distance)
+    map1 = data.map(lambda row: udf_dist(two_routes[0], row))
+    print("map1", map1.collect())
     #clusters = data.map(lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid)), point)).groupByKey()
     #print("clusters1 = ", clusters.collect())
 
