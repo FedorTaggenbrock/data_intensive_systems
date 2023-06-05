@@ -2,7 +2,6 @@ from statistics import mode
 from pyspark import RDD
 from pyspark.sql import SparkSession
 from distance_function import route_distance
-from os import getenv
 
 def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data: RDD) -> list[tuple]:
     '''Define variables to store results.'''
@@ -30,7 +29,7 @@ def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data
     return results
 
 
-def kModes(spark_instance: SparkSession, data: RDD, k: int, clustering_settings):
+def kModes(spark_instance: SparkSession, data: RDD, k: int, clustering_settings) -> list:
     """
     Perform k-modes clustering on the given data. Assumes only one-hot encoded data?
 
