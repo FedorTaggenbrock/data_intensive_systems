@@ -17,6 +17,8 @@ from clustering import run_clustering
 
 from parse_data import parse_json_data, encode_data
 
+from data_visualization import plot_routes, plot_results
+
 def run_all_tests():
     clustering_settings = {
         'clustering_algorithm': 'kmodes',
@@ -53,6 +55,22 @@ def run_all_tests():
     # print("Start evaluating clusters")
     return
 
+def plot_test():
+    clustering_settings = {
+        'clustering_algorithm': 'kmodes',
+        'k_values': [2, 3],
+        'max_iterations': 2,
+        'distance_function': route_distance,
+        'debug_flag': True,
+    }
+
+    # main function which runs all other tests imported from different files
+    spark = SparkSession.builder.appName("Clustering").getOrCreate()
+    print("Initialized Spark.")
+
+    # Opletten dat bij het parsen de hoeveelheden van stad A-> stad B wel goed samengevoegd worden. Zie nu twee keer dezelfde from->to staan bij route 1 namelijk.
+    pd_df, num_routes = parse_json_data()
+    plot_routes(pd_df)
 
 
 
