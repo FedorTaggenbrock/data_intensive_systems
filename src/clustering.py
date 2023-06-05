@@ -63,6 +63,8 @@ def kModes_v2(spark_instance: SparkSession, distance, data: RDD, k: int, cluster
 
     centroids = [x for x in data.takeSample(withReplacement=False, num=k)]
 
+    print("centroids:", centroids)
+
     # Iterate until convergence or until the maximum number of iterations is reached
     for i in range(clustering_settings["max_iterations"]):
         if clustering_settings["debug_flag"]:
