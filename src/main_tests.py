@@ -70,7 +70,8 @@ def plot_test():
 
     # Opletten dat bij het parsen de hoeveelheden van stad A-> stad B wel goed samengevoegd worden. Zie nu twee keer dezelfde from->to staan bij route 1 namelijk.
     pd_df, num_routes = parse_json_data()
-    plot_routes(pd_df)
+    encoded_spark_df, product_list = encode_data(spark, pd_df, clustering_settings["debug_flag"])
+    plot_routes(encoded_spark_df)
 
 
 
