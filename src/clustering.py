@@ -51,7 +51,7 @@ def kModes(spark_instance: SparkSession, data: RDD, k: int, clustering_settings)
     #
     # return []
 
-    print(getenv())
+    print(getenv('PATH'))
 
     # Iterate until convergence or until the maximum number of iterations is reached
     for i in range(clustering_settings["max_iterations"]):
