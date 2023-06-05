@@ -24,7 +24,6 @@ def run_all_tests():
         'clustering_algorithm': 'kmodes',
         'k_values': [2, 3],
         'max_iterations': 2,
-        'distance_function': route_distance,
         'debug_flag': True,
     }
 
@@ -60,7 +59,6 @@ def plot_test():
         'clustering_algorithm': 'kmodes',
         'k_values': [2, 3],
         'max_iterations': 2,
-        'distance_function': route_distance,
         'debug_flag': True,
     }
 

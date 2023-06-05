@@ -34,7 +34,6 @@ def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data
             predicted_centroids = kModes(
                 spark_instance=spark_instance,
                 data=data,
-                distance=clustering_settings['distance_function'],
                 k=current_k,
                 clustering_settings=clustering_settings
             )
@@ -47,7 +46,7 @@ def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data
     return results
 
 
-def kModes(spark_instance: SparkSession, distance, data: RDD, k: int, clustering_settings) -> list:
+def kModes(spark_instance: SparkSession, data: RDD, k: int, clustering_settings) -> list:
     """
     Perform k-modes clustering on the given data. Assumes only one-hot encoded data?
 
