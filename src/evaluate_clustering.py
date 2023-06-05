@@ -173,12 +173,31 @@ def get_best_setting(metrics: list[dict]) -> dict:
     for metric_name in sorted_metrics[0].keys():
         if metric_name == 'settings': # Skip the settings; those are not a type of metric
             continue
-        elif sorted_metrics[metric_name] is None: # This should only be the case for average_centroid_deviation (which is calculated by comparing to perfect centroids).
+        elif sorted_metrics[0][metric_name] is None: # This should only be the case for average_centroid_deviation (which is calculated by comparing to perfect centroids).
             continue
         else:
             # Get just the scores for this metric
             scores = [metric[metric_name] for metric in sorted_metrics]
 
+            # Approximate first derivative
+            diff_1 = np.diff(scores)
+
+            # Approximate second derivative. For metrics that should be minimized, like within cluster distance, we look for the elbow where 
+            # the decrease starts to slow down, so we compute the second derivative and find, where it is maximum.
+            # For metrics that should be maximized, like silhouette score, we look for the elbow where the increase starts to slow down,
+            # so we compute the second derivative and find where it is minimum.
+            if metric_name in higher_better_metrics:
+                diff_2 = np.diff(diff_1)
+            else:
+                diff_2 = -np.diff(diff_1)
+        
+            elbow_point_index = np.argmax(diff_2) + 2 # Need to add 2, because diff starts with: list[1]-list[0], so the first element is "lost."
+            
+            # Store the best setting for this metric
+            best_setting = sorted_metrics[elbow_point_index]['settings']
+            best_settings_dict[metric_name] = best_setting
+
+            """OLD CODE
             # Approximate first derivative (difference between each consecutive score)
             first_derivative = [scores[i+1] - scores[i] for i in range(len(scores) - 1)]
 
@@ -188,17 +207,15 @@ def get_best_setting(metrics: list[dict]) -> dict:
             # Find the index of the first local minimum or maximum in the second derivative,
             # depending on whether the metric should be minimized or maximized.
             if metric_name in higher_better_metrics:
-                # The point where the second derivative changes sign (aka is closest to zero)
+                # We're looking for a maximum in the first derivative, which is the rate of INCREASE in this case.
+                # This is where the second derivative changes sign, aka a local MAXIMUM in the second derivative.
+                # This indicates the elbow.
                 elbow_point_index = next(i for i in range(len(second_derivative) - 1) if second_derivative[i] > 0 and second_derivative[i+1] < 0)
             else:
+                # Here, it's almost the same, but we have the rate of DECREASE as the first derivative.
+                # So, we're looking for a local MINIMUM in the second derivative.
                 elbow_point_index = second_derivative.index(min(second_derivative)) + 1
-
-            # Find the index of the first local minimum in the second derivative
-            # Add 1 because the second derivative is offset by one compared to the scores
-
-            # Store the best setting for this metric
-            best_setting = sorted_metrics[elbow_point_index]['settings']
-            best_settings_dict[metric_name] = best_setting
+            """
 
     return best_settings_dict
 
@@ -207,8 +224,6 @@ def get_best_setting(metrics: list[dict]) -> dict:
 
 
     lowest_within_cluster_distance_sort = sorted(metrics, key=lambda x: x['average_within_cluster_distance'])
-
-
 
     best_setting_within_cluster_distance = lowest_within_cluster_distance_sort[0]['settings']
     # Lower is better
@@ -228,14 +243,22 @@ def get_best_setting(metrics: list[dict]) -> dict:
     average_within_cluster_distances = [metric['average_within_cluster_distance'] for metric in metrics]
 
 
- 
-
-
 if __name__ == "__main__":
-    
-    #res = print(evaluate_clustering_test2(dummy_result)	)
-    res = evaluate_clustering_test2()
-    best_setting = get_best_setting(res)
+    # res = evaluate_clustering_test2()
+
+    dummy_res = [
+        {'settings':{'k': 2},
+         'average_within_cluster_distance': 0.5166666666666666,
+         'average_within_cluster_variance': 0.0002551118827160493,
+         'average_centroid_deviation': None,
+         'silhouette_score': 0.30505357142857137},
+        {'settings':{'k': 3},
+         'average_within_cluster_distance':0.5944444444444444,
+         'average_within_cluster_variance':0.00020747599451303157,
+         'average_centroid_deviation':None,
+         'silhouette_score':0.25358420593368236} ]
+
+    best_setting = get_best_setting(dummy_res)
     print(best_setting)
     print('done')
 
