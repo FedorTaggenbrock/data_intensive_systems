@@ -81,8 +81,8 @@ def encode_data(spark: SparkSession, df: pd.DataFrame, debug_flag =False):
 
     #Combine all the rows with the same route_id in such a way that all the different values per column are combined into a list.
     from_to_cols = [col for col in spark_df.columns if col not in ['route_id', 'product']]
-    list_to_dict_udf = udf(list_to_dict, MapType(IntegerType(), StringType()))
-    spark_df = spark_df.groupBy("route_id").agg(*[list_to_dict_udf(collect_list(c)).alias(c) for c in from_to_cols])
+    #list_to_dict_udf = udf(list_to_dict, MapType(IntegerType(), StringType()))
+    spark_df = spark_df.groupBy("route_id").agg(*[collect_list(c).alias(c) for c in from_to_cols])
 
     if debug_flag:
         print("Spark dataframe after encoding:")
