@@ -4,7 +4,8 @@ import inspect
 from pyspark.sql.functions import collect_list, udf, broadcast, lit
 from pyspark.sql import SparkSession
 from pyspark.sql.types import MapType, IntegerType, StringType
-
+from scipy.sparse import csr_matrix
+from scipy.spatial.distance import cdist
 
 def parse_json_data(json_path='data_intensive_systems/data/ex_example_route.json', debug_flag = False):
     """Parse the data from the json file to a pandas df."""
@@ -56,7 +57,7 @@ def encode_data(spark: SparkSession, df: pd.DataFrame, debug_flag =False):
     if debug_flag:
         original_spark_df = spark.createDataFrame(df)
         print("spark dataframe before encoding")
-        original_spark_df.show()
+        original_spark_df.show(truncate=False)
 
     # Create a new column with the combined 'from' and 'to' values and remove the original from, to columns.
     df['from_to'] = df['from'] + '-' + df['to']
@@ -91,9 +92,7 @@ def encode_data(spark: SparkSession, df: pd.DataFrame, debug_flag =False):
         spark_df.show(truncate=False)
         print("product list:")
         print(product_list)
-        print("elements 18, 38, 47 from product_list:", product_list[18], product_list[38], product_list[47])
-        route2_df = df[df["route_id"] == 2]
-        print("route 2:", route2_df)
+        print("elements 18, 4, 12 from product_list:", product_list[18], product_list[4], product_list[12])
 
     return spark_df, product_list
 
