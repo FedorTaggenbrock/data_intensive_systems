@@ -3,8 +3,9 @@ from parse_data import parse_json_data, encode_data
 from data_visualization import plot_routes, plot_results
 from distance_function import route_distance
 from clustering import run_clustering
+from os import getcwd
 
-
+print(getcwd())
 def run_all_tests():
     clustering_settings = {
         'clustering_algorithm': 'kmodes',
