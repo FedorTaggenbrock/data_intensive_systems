@@ -1,6 +1,6 @@
 
 import numpy as np
-import cmath as math
+import math
 def dictionary_distance(dict1, dict2):
     #This function computes the euclidean distance for dict representations of (sparse) vectors.
     #The get method is used to return a default value of 0 for keys that are not present in one of the dictionaries
@@ -17,6 +17,6 @@ def route_distance(route1, route2):
             union += 1
             if trip1 and trip2:
                 intersection += dictionary_distance(route1[column], route2[column])
-    return float(intersection) / union if union != 0 else 0.0
+    return intersection / union if union != 0 else 0.0
 
 
