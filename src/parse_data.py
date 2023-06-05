@@ -93,6 +93,7 @@ def encode_data(spark: SparkSession, df: pd.DataFrame, debug_flag =False):
         # print(result)
         print("product list:")
         print(product_list)
+        print(product_list[10])
 
     return spark_df, product_list
 
