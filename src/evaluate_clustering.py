@@ -139,7 +139,7 @@ if __name__ == "__main__":
     res = print(evaluate_clustering_test2(dummy_result)	)
 
  
- def evaluate_kModes(data: RDD, clustering_settings: dict, clustering_result: list[tuple[ list[float], dict[str, Any]]], 
+def evaluate_kModes(data: RDD, clustering_settings: dict, clustering_result: list[tuple[ list[float], dict[str, Any]]],
                     perfect_centroids: Union[None, tuple]) -> dict:
     f"""
     Evaluate the clustering of the given data using the given centroids and k-modes algorithm.
