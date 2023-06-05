@@ -1,25 +1,5 @@
-import cmath as math
-
-from typing import List
-from pyspark.sql.functions import udf
-from pyspark.sql.types import ArrayType, StringType
-import numpy as np
-import random
 from statistics import mode
-
-from pyspark.sql import SparkSession
-import scipy
-
 from pyspark import RDD
-from pyspark import SparkContext
-from pyspark.sql import DataFrame
-
-# Parameter search imports
-from pyspark.ml import Estimator, Model
-from pyspark.ml.param import Param, Params
-from pyspark.ml.tuning import ParamGridBuilder, CrossValidator
-from distance_function import route_distance
-
 from pyspark.sql import SparkSession
 
 def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data: RDD) -> list[tuple]:
@@ -70,7 +50,7 @@ def kModes(spark_instance: SparkSession, data: RDD, k: int, clustering_settings)
             print("centroids = ", centroids)
 
         # Assign each point to the closest centroid
-        clusters = data.map(lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid)), point)).groupByKey()
+        clusters = data.map(lambda point: (min(centroids, key=lambda centroid: clustering_settings["distance"](point, centroid)), point)).groupByKey()
 
         print("clusters1 = ", clusters.collect())
 

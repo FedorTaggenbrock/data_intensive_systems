@@ -1,33 +1,8 @@
-from typing import List
-from pyspark.sql.functions import udf
-from pyspark.sql.types import ArrayType, StringType
-import numpy as np
-from statistics import mode
-
 from pyspark.sql import SparkSession
-import scipy
-
-from pyspark import RDD
-from pyspark import SparkContext
-from pyspark.sql.functions import collect_list
-
-#from clustering import run_clustering
-
 from parse_data import parse_json_data, encode_data
-
 from data_visualization import plot_routes, plot_results
-
 from clustering import run_clustering
 from distance_function import route_distance
-
-
-#Imports from the clustering file now added to the main_tests due to the extremely weird error.
-import cmath as math
-import numpy as np
-from statistics import mode
-from pyspark import RDD
-from pyspark.sql import SparkSession
-
 
 
 def run_all_tests():
