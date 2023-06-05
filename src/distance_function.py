@@ -15,11 +15,11 @@ def route_distance(route1, route2):
     union = 0
     for column in columns:
         print(route1[column])
-        trip1 = any(route1[column])
-        trip2 = any(route2[column])
-        if trip1 or trip2:
-            union += 1
-            if trip1 and trip2:
-                intersection += dictionary_distance(route1[column], route2[column])
-    return float(intersection) / union if union != 0 else 0.0
+    #     trip1 = any(route1[column])
+    #     trip2 = any(route2[column])
+    #     if trip1 or trip2:
+    #         union += 1
+    #         if trip1 and trip2:
+    #             intersection += dictionary_distance(route1[column], route2[column])
+    # return float(intersection) / union if union != 0 else 0.0
 
