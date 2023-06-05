@@ -10,8 +10,6 @@ from pyspark.sql import SparkSession
 # Typing
 from typing import Any, Callable, Union
 
-
-
 def evaluate_clustering(data: RDD, clustering_result: list[tuple[ list[float], dict[str, Any]]], clustering_settings: dict, perfect_centroids = None) -> list[dict]:
     """
     Evaluate the clustering of the given data using the given centroids and clustering setting.
@@ -69,18 +67,37 @@ def evaluate_kModes2(data: RDD, clustering_settings: dict, clustering_result: li
     # For each clustering setting, calculate the metrics
     for centroids, setting in clustering_result:
         # Assign each datapoint to its closest centroid
-        distances_to_centroids = np.array([distance_function(data_np, centroid) for centroid in centroids])
-        labels = np.argmin(distances_to_centroids, axis=0)
+        distances_to_centroids = np.array([[distance_function(datapoint, centroid) for centroid in centroids] for datapoint in data_np])
+        labels = np.argmin(distances_to_centroids, axis=1)
 
         # Calculate average distances
-        average_within_cluster_distance = np.mean([distance_function(data_np[labels == i], centroids[i]) for i in range(len(centroids))])
-        average_within_cluster_variance = np.var([distance_function(data_np[labels == i], centroids[i]) for i in range(len(centroids))])
-        average_centroid_deviation = np.mean(np.std(centroids, axis=0))
+        average_within_cluster_distance = np.mean([np.mean(distances_to_centroids[labels == i, i]) for i in range(len(centroids))])
+        average_within_cluster_variance = np.var([np.var(distances_to_centroids[labels == i, i]) for i in range(len(centroids))])
+
+
+        # Vectorized attempt
+        """
+        average_within_cluster_distance = np.mean([np.mean(distance_function(data_np[labels == i], centroids[i])) for i in range(len(centroids))])
+        average_within_cluster_variance = np.var([np.var(distance_function(data_np[labels == i], centroids[i])) for i in range(len(centroids))])
+        """
+        
 
         # Calculate Silhouette Score, Davies-Bouldin Index and Calinski-Harabasz Index
-        silhouette = silhouette_score(data_np, labels)
+        silhouette = silhouette_score(data_np, labels, metric=distance_function)
+        # TODO these assume euclidean distance
         db_index = davies_bouldin_score(data_np, labels)
         ch_index = calinski_harabasz_score(data_np, labels)
+
+        if perfect_centroids is not None:
+            # Calculate deviation of centroids from perfect centroids. First, calculate for each centroid which the distance to each perfect centroid.
+            
+            # And then, determine which is closest.
+
+            # Then, calculate the average distance between each centroid and its closest perfect centroid
+
+            average_centroid_deviation = None
+        else:
+            average_centroid_deviation = None
 
         # Store the metrics in a dictionary
         metrics = {
@@ -89,8 +106,8 @@ def evaluate_kModes2(data: RDD, clustering_settings: dict, clustering_result: li
             'average_within_cluster_variance': average_within_cluster_variance,
             'average_centroid_deviation': average_centroid_deviation,
             'silhouette_score': silhouette,
-            'davies_bouldin_index': db_index,
-            'calinski_harabasz_index': ch_index
+            # 'davies_bouldin_index': db_index,
+            # 'calinski_harabasz_index': ch_index
         }
 
         results.append(metrics)
@@ -98,21 +115,19 @@ def evaluate_kModes2(data: RDD, clustering_settings: dict, clustering_result: li
     return results
 
 
-def evaluate_clustering_test2(clustering_result):
+def evaluate_clustering_test2():
 
-    spark = SparkSession.builder.\
-            config('spark.app.name', 'evaluate_clustering_test1').\
-                getOrCreate()
+    spark = SparkSession.builder.appName("Clustering").getOrCreate()
 
     data = spark.sparkContext.parallelize([
-            [1,1,0,1,0],
+            [1,1,1,1,1],
+            [0,0,0,0,0],
             [1,1,1,1,0],
-            [0,0,1,0,1],
-            [1,0,0,0,1],
-            [1,0,0,1,0],
-            [1,1,1,1,0],
-            [0,1,1,0,1],
-            [1,0,0,1,0],
+            [0,0,1,1,0],
+            [1,0,1,1,0],
+            [0,0,0,1,0],
+            [1,1,1,0,0],
+            [1,1,0,0,0],
         ])
     
     clustering_settings = {
@@ -123,20 +138,106 @@ def evaluate_clustering_test2(clustering_result):
         'debug_flag': False,
     }
 
+    perfect_centroids = [[1, 1, 1, 1, 0], [0, 0, 1, 1, 0]]
+    dummy_result = [
+        ([[1, 0, 0, 1, 0], [1, 1, 1, 1, 0]], {'k': 2}),
+        ([[0, 0, 1, 0, 1], [1, 1, 1, 1, 0], [1, 0, 0, 1, 0]], {'k': 3})
+    ]
+
     metrics = evaluate_clustering(
         data=data,
-        clustering_result=clustering_result,
+        clustering_result=dummy_result,
         clustering_settings=clustering_settings,
-        perfect_centroids=None
+        perfect_centroids=perfect_centroids,
     )
 
     spark.stop()
 
     return metrics
 
+def get_best_setting(metrics: list[dict]) -> dict:
+    """
+    Given a list of metrics for different clustering settings, return the best setting.
+    We have several metrics, and want to find the best setting for each metric. We do this using the elbow method.
+    The elbow occurs when the first derivative has its maximum (we do assume the series to be monotically decreasing, this an inherent assumption of the elbow method ),
+    in other words when the second derivative is zero. So we approximate the second derivative. 
+    """
+
+    # Sort the list by the setting k. Note, they should be sorted by default already.
+    sorted_metrics = sorted(metrics, key=lambda x: x['settings']['k'])
+    # Store which metrics are better when they are higher, as the elbow is calculated differently for increasing series.
+    higher_better_metrics = ['silhouette_score']
+    # Final result, to be returned.
+    best_settings_dict = {}
+
+    for metric_name in sorted_metrics[0].keys():
+        if metric_name == 'settings': # Skip the settings; those are not a type of metric
+            continue
+        elif sorted_metrics[metric_name] is None: # This should only be the case for average_centroid_deviation (which is calculated by comparing to perfect centroids).
+            continue
+        else:
+            # Get just the scores for this metric
+            scores = [metric[metric_name] for metric in sorted_metrics]
+
+            # Approximate first derivative (difference between each consecutive score)
+            first_derivative = [scores[i+1] - scores[i] for i in range(len(scores) - 1)]
+
+            # Approximate second derivative (difference between each consecutive first derivative)
+            second_derivative = [first_derivative[i+1] - first_derivative[i] for i in range(len(first_derivative) - 1)]
+
+            # Find the index of the first local minimum or maximum in the second derivative,
+            # depending on whether the metric should be minimized or maximized.
+            if metric_name in higher_better_metrics:
+                # The point where the second derivative changes sign (aka is closest to zero)
+                elbow_point_index = next(i for i in range(len(second_derivative) - 1) if second_derivative[i] > 0 and second_derivative[i+1] < 0)
+            else:
+                elbow_point_index = second_derivative.index(min(second_derivative)) + 1
+
+            # Find the index of the first local minimum in the second derivative
+            # Add 1 because the second derivative is offset by one compared to the scores
+
+            # Store the best setting for this metric
+            best_setting = sorted_metrics[elbow_point_index]['settings']
+            best_settings_dict[metric_name] = best_setting
+
+    return best_settings_dict
+
+    # Lower is better
+
+
+
+    lowest_within_cluster_distance_sort = sorted(metrics, key=lambda x: x['average_within_cluster_distance'])
+
+
+
+    best_setting_within_cluster_distance = lowest_within_cluster_distance_sort[0]['settings']
+    # Lower is better
+    lowest_within_cluster_variance_sort = sorted(metrics, key=lambda x: x['average_within_cluster_variance'])
+    best_setting_within_cluster_variance = lowest_within_cluster_variance_sort[0]['settings']
+    # Lower is better
+    lowest_centroid_deviation_sort = sorted(metrics, key=lambda x: x['average_centroid_deviation'])
+    best_setting_within_cluster_variance = lowest_centroid_deviation_sort[0]['settings']
+    # Higher is better
+    best_setting_silhoutte_score = sorted(metrics, key=lambda x: x['silhouette_score'], reverse=True)[0]['settings']
+
+    # Now, we want to calculate the best setting according to the elbow method. We don't want to do this visually.
+    # We want to find the point where the average within cluster distance starts to decrease less rapidly.
+    # We do this by approximating the second derivative of the average within cluster distance.
+    
+    # First, get a list all the average within cluster distances in their actual order. 
+    average_within_cluster_distances = [metric['average_within_cluster_distance'] for metric in metrics]
+
+
+ 
+
+
 if __name__ == "__main__":
-    dummy_result = [([[1, 0, 0, 1, 0], [1, 1, 1, 1, 0]], {'k': 2}), ([[0, 0, 1, 0, 1], [1, 1, 1, 1, 0], [1, 0, 0, 1, 0]], {'k': 3})]
-    res = print(evaluate_clustering_test2(dummy_result)	)
+    
+    #res = print(evaluate_clustering_test2(dummy_result)	)
+    res = evaluate_clustering_test2()
+    best_setting = get_best_setting(res)
+    print(best_setting)
+    print('done')
 
  
 def evaluate_kModes(data: RDD, clustering_settings: dict, clustering_result: list[tuple[ list[float], dict[str, Any]]],
