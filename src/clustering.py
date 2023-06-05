@@ -2,7 +2,7 @@ from statistics import mode
 from pyspark import RDD
 from pyspark.sql import SparkSession
 from distance_function import route_distance
-from os import getcwd
+from os import getenv
 
 def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data: RDD) -> list[tuple]:
     '''Define variables to store results.'''
@@ -51,7 +51,7 @@ def kModes(spark_instance: SparkSession, data: RDD, k: int, clustering_settings)
     #
     # return []
 
-    print(getcwd())
+    print(getenv())
 
     # Iterate until convergence or until the maximum number of iterations is reached
     for i in range(clustering_settings["max_iterations"]):
