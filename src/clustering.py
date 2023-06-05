@@ -20,7 +20,7 @@ from distance_function import route_distance
 
 from pyspark.sql import SparkSession
 
-def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data: DataFrame) -> list[tuple]:
+def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data: RDD) -> list[tuple]:
     '''Define variables to store results.'''
     # E.g. for kmodes: [(predicted_centroids, (k, init_mode)), ...]
     results = []
@@ -31,10 +31,9 @@ def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data
             # TODO in the future add other parameters here.
 
             # Run clustering with current parameters
-            predicted_centroids = kModes_v2(
+            predicted_centroids = kModes(
                 spark_instance=spark_instance,
                 data=data,
-                distance=clustering_settings['distance_function'],
                 k=current_k,
                 clustering_settings=clustering_settings
             )
@@ -47,7 +46,7 @@ def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data
     return results
 
 
-def kModes_v2(spark_instance: SparkSession, distance, data: RDD, k: int, clustering_settings) -> list:
+def kModes(spark_instance: SparkSession, data: RDD, k: int, clustering_settings) -> list:
     """
     Perform k-modes clustering on the given data. Assumes only one-hot encoded data?
 
@@ -69,9 +68,9 @@ def kModes_v2(spark_instance: SparkSession, distance, data: RDD, k: int, cluster
             print("centroids = ", centroids)
 
         # Assign each point to the closest centroid
-        clusters = data.map(lambda point: (min(centroids, key=lambda centroid: distance(point, centroid)), point)).groupByKey()
+        clusters = data.map(lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid)), point)).groupByKey()
 
-        #print("clusters1 = ", clusters.collect())
+        print("clusters1 = ", clusters.collect())
 
         #Compute new centroids as the mode of the points in each cluster.
         newCentroids = clusters.mapValues(lambda arrays: tuple([mode(x) for x in zip(*arrays)]) ).collect()
@@ -87,39 +86,6 @@ def kModes_v2(spark_instance: SparkSession, distance, data: RDD, k: int, cluster
 
 
 
-def clustering_test1():
-    # Testing code
-    spark = SparkSession.builder.appName("Clustering").getOrCreate()
-    # spark = SparkSession.builder.master("local").appName("Clustering").getOrCreate()
-
-    data = spark.sparkContext.parallelize([
-            [1,1,0,1,0],
-            [1,1,1,1,0],
-            [0,0,1,0,1],
-            [1,0,0,0,1],
-            [1,0,0,1,0],
-            [1,1,1,1,0],
-            [0,1,1,0,1],
-            [1,0,0,1,0],
-        ])
-
-    print("Initialized Spark. Start clustering.")
-
-    centroids = kModes_v2(
-        spark_instance=spark,
-        distance = scipy.spatial.distance.jaccard,
-        data=data,
-        k=2,
-        max_iterations=2,
-        )
-    
-    print("Finished clustering.")
-    return centroids
-
-
-if __name__ == '__main__':
-    # clustering_test1()
-    clustering_test2()	
 
 
     
