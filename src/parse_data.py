@@ -91,7 +91,7 @@ def encode_data(spark: SparkSession, df: pd.DataFrame, debug_flag =False):
         spark_df.show(truncate=False)
         print("product list:")
         print(product_list)
-        print("elements 18, 38, 47 from product_list:", product_list[18], product_list[38], product_list[47])
+        print("elements 18, 4, 12 from product_list:", product_list[18], product_list[4], product_list[12])
 
     return spark_df, product_list
 
