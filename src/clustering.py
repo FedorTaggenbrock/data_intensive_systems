@@ -45,23 +45,23 @@ def kModes(spark_instance: SparkSession, data: RDD, k: int, clustering_settings)
     """
 
     centroids = [x for x in data.takeSample(withReplacement=False, num=k)]
-    # two_routes = data.take(2)
-    # print("The distance between route 0 and route 1!! is given by:")
-    # print(route_distance(two_routes[0], two_routes[1]))
-    #
-    # return []
-
-    print(getenv('PATH'))
-
-    # Iterate until convergence or until the maximum number of iterations is reached
-    for i in range(clustering_settings["max_iterations"]):
-        if clustering_settings["debug_flag"]:
-            print("centroids = ", centroids)
-        # Assign each point to the closest centroid
-        clusters = data.map(lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid)), point)).groupByKey()
-        print("clusters1 = ", clusters.collect())
+    two_routes = data.take(2)
+    print("The distance between route 0 and route 1!! is given by:")
+    print(route_distance(two_routes[0], two_routes[1]))
 
     return []
+
+    #print(getenv('PATH'))
+
+    # Iterate until convergence or until the maximum number of iterations is reached
+    # for i in range(clustering_settings["max_iterations"]):
+    #     if clustering_settings["debug_flag"]:
+    #         print("centroids = ", centroids)
+    #     # Assign each point to the closest centroid
+    #     clusters = data.map(lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid)), point)).groupByKey()
+    #     print("clusters1 = ", clusters.collect())
+    #
+    # return []
     #
     #     #Compute new centroids as the mode of the points in each cluster.
     #     newCentroids = clusters.mapValues(lambda arrays: tuple([mode(x) for x in zip(*arrays)]) ).collect()
