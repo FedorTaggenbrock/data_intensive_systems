@@ -4,7 +4,8 @@ import inspect
 from pyspark.sql.functions import collect_list, udf, broadcast, lit
 from pyspark.sql import SparkSession
 from pyspark.sql.types import MapType, IntegerType, StringType
-
+from scipy.sparse import csr_matrix
+from scipy.spatial.distance import cdist
 
 def parse_json_data(json_path='data_intensive_systems/data/ex_example_route.json', debug_flag = False):
     """Parse the data from the json file to a pandas df."""
@@ -80,7 +81,7 @@ def encode_data(spark: SparkSession, df: pd.DataFrame, debug_flag =False):
     spark_df = spark.createDataFrame(result)
 
     def list_to_dict(ls):
-        return {index: value for index, value in enumerate(ls) if value >0}
+        return csr_matrix(ls) #{index: value for index, value in enumerate(ls) if value >0}
     #Combine all the rows with the same route_id in such a way that all the different values per column are combined into a list.
     from_to_cols = [col for col in spark_df.columns if col not in ['route_id', 'product']]
     list_to_dict_udf = udf(list_to_dict, MapType(IntegerType(), StringType()))
