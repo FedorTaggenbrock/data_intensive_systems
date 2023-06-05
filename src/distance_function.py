@@ -1,6 +1,13 @@
 
 import numpy as np
 import cmath as math
+def dictionary_distance(dict1, dict2):
+    #This function computes the euclidean distance for dict representations of (sparse) vectors.
+    #The get method is used to return a default value of 0 for keys that are not present in one of the dictionaries
+    for product in set(dict1) | set(dict2):
+        print("prod in dict1", dict1.get(product, 0))
+    return 0
+    #return math.sqrt(np.sum([(int(float(dict1.get(product, 0))) - int(float(dict2.get(product, 0)))) ** 2 for product in set(dict1) | set(dict2)]))
 
 def route_distance(route1, route2):
     columns = route1.__fields__[1:]
@@ -15,10 +22,3 @@ def route_distance(route1, route2):
                 intersection += dictionary_distance(route1[column], route2[column])
     return float(intersection) / union if union != 0 else 0.0
 
-def dictionary_distance(dict1, dict2):
-    #This function computes the euclidean distance for dict representations of (sparse) vectors.
-    #The get method is used to return a default value of 0 for keys that are not present in one of the dictionaries
-    for product in set(dict1) | set(dict2):
-        print("prod in dict1", dict1.get(product, 0))
-
-    return math.sqrt(np.sum([(int(float(dict1.get(product, 0))) - int(float(dict2.get(product, 0)))) ** 2 for product in set(dict1) | set(dict2)]))
