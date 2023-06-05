@@ -1,8 +1,8 @@
 from pyspark.sql import SparkSession
 from parse_data import parse_json_data, encode_data
 from data_visualization import plot_routes, plot_results
-from clustering import run_clustering
 from distance_function import route_distance
+from clustering import run_clustering
 
 
 def run_all_tests():
@@ -10,7 +10,7 @@ def run_all_tests():
         'clustering_algorithm': 'kmodes',
         'k_values': [2, 3],
         'max_iterations': 2,
-        'debug_flag': True,
+        'debug_flag': True
     }
 
     #main function which runs all other tests imported from different files
@@ -45,7 +45,7 @@ def plot_test():
         'clustering_algorithm': 'kmodes',
         'k_values': [2, 3],
         'max_iterations': 2,
-        'debug_flag': True,
+        'debug_flag': True
     }
 
     # main function which runs all other tests imported from different files
