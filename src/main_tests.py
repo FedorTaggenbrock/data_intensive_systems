@@ -16,28 +16,15 @@ from pyspark.sql.functions import collect_list
 from parse_data import parse_json_data, encode_data
 
 from data_visualization import plot_routes, plot_results
+
+from distance_function import route_distance
+
+
+#Imports from the clustering file now added to the main_tests due to the extremely weird error.
 import cmath as math
-
-from typing import List
-from pyspark.sql.functions import udf
-from pyspark.sql.types import ArrayType, StringType
 import numpy as np
-import random
 from statistics import mode
-
-from pyspark.sql import SparkSession
-import scipy
-
 from pyspark import RDD
-from pyspark import SparkContext
-from pyspark.sql import DataFrame
-
-# Parameter search imports
-from pyspark.ml import Estimator, Model
-from pyspark.ml.param import Param, Params
-from pyspark.ml.tuning import ParamGridBuilder, CrossValidator
-# from distance_function import route_distance
-
 from pyspark.sql import SparkSession
 
 
@@ -95,23 +82,7 @@ def plot_test():
     plot_routes(encoded_spark_df)
 
 
-def route_distance(route1, route2):
-    columns = route1.__fields__[1:]
-    intersection = 0
-    union = 0
-    for column in columns:
-        if any(route1[column]) or any(route2[column]):
-            union += 1
-            if any(route1[column]) and any(route2[column]):
-                intersection += dictionary_distance(route1[column], route2[column])
-    return float(intersection) / union if union != 0 else 0.0
 
-
-def dictionary_distance(dict1, dict2):
-    # This function computes the euclidean distance for dict representations of (sparse) vectors.
-    # The get method is used to return a default value of 0 for keys that are not present in one of the dictionaries
-    return math.sqrt(np.sum([(int(float(dict1.get(product, 0))) - int(float(dict2.get(product, 0)))) ** 2 for product in
-                             set(dict1) | set(dict2)]))
 
 
 def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data: RDD) -> list[tuple]:
