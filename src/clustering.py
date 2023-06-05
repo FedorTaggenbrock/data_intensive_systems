@@ -16,7 +16,8 @@ from pyspark.sql import DataFrame
 from pyspark.ml import Estimator, Model
 from pyspark.ml.param import Param, Params
 from pyspark.ml.tuning import ParamGridBuilder, CrossValidator
-from distance_function import route_distance
+#from distance_function import route_distance
+import math
 
 from pyspark.sql import SparkSession
 
@@ -69,7 +70,7 @@ def kModes(spark_instance: SparkSession, distance, data: RDD, k: int, clustering
             print("centroids = ", centroids)
 
         # Assign each point to the closest centroid
-        clusters = data.map(lambda point: (min(centroids, key=lambda centroid: distance(point, centroid)), point)).groupByKey()
+        clusters = data.map(lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid)), point)).groupByKey()
 
         print("clusters1 = ", clusters.collect())
 
@@ -85,37 +86,21 @@ def kModes(spark_instance: SparkSession, distance, data: RDD, k: int, clustering
 
     return [list(x) for x in centroids]
 
+def route_distance(route1, route2):
+    columns = route1.__fields__[1:]
+    intersection = 0
+    union = 0
+    for column in columns:
+        if any(route1[column]) or any(route2[column]):
+            union += 1
+            if any(route1[column]) and any(route2[column]):
+                intersection += dictionary_distance(route1[column], route2[column])
+    return float(intersection) / union if union != 0 else 0.0
 
-
-def clustering_test1():
-    # Testing code
-    spark = SparkSession.builder.appName("Clustering").getOrCreate()
-    # spark = SparkSession.builder.master("local").appName("Clustering").getOrCreate()
-
-    data = spark.sparkContext.parallelize([
-            [1,1,0,1,0],
-            [1,1,1,1,0],
-            [0,0,1,0,1],
-            [1,0,0,0,1],
-            [1,0,0,1,0],
-            [1,1,1,1,0],
-            [0,1,1,0,1],
-            [1,0,0,1,0],
-        ])
-
-    print("Initialized Spark. Start clustering.")
-
-    centroids = kModes(
-        spark_instance=spark,
-        distance = scipy.spatial.distance.jaccard,
-        data=data,
-        k=2,
-        )
-    
-    print("Finished clustering.")
-    return centroids
-
-
+def dictionary_distance(dict1, dict2):
+    #This function computes the euclidean distance for dict representations of (sparse) vectors.
+    #The get method is used to return a default value of 0 for keys that are not present in one of the dictionaries
+    return math.sqrt(np.sum( [(int(float(dict1.get(product, 0))) - int(float(dict2.get(product, 0)))) ** 2 for product in set(dict1) | set(dict2)] ))
 
 
     
