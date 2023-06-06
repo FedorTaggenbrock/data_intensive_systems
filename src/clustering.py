@@ -50,9 +50,9 @@ def kModes(data: RDD, k: int, clustering_settings):
     def dictionary_distance(dict1, dict2):
         # This function computes the normalized euclidean distance (in 0-1) for dict representations of (sparse) vectors.
         norm_dict1 = math.sqrt(np.sum(
-            [v**2 for k,v in dict1]))
+            [v**2 for k,v in dict1.items()]))
         norm_dict2 = math.sqrt(np.sum(
-            [v**2 for k,v in dict2]))
+            [v**2 for k,v in dict2.items()]))
         return math.sqrt(np.sum(
             [(int(float(dict1.get(product, 0))) - int(float(dict2.get(product, 0)))) ** 2 for product in
              set(dict1) | set(dict2)]))/(norm_dict1+norm_dict2)
