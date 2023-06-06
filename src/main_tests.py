@@ -7,6 +7,7 @@ from os import getcwd
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
 
 print(getcwd())
 def run_all_tests():
@@ -80,6 +81,13 @@ def plot_test():
     # Convert back to DataFrame for easy handling
     df_2d = pd.DataFrame(df_2d, columns=["PC1", "PC2"])
     print(df_2d.to_string())
+
+    plt.figure(figsize=(16, 10))
+    plt.scatter(df_2d['PC1'], df_2d['PC2'])
+    plt.title('Scatter plot of PC1 vs PC2')
+    plt.xlabel('PC1')
+    plt.ylabel('PC2')
+    plt.show()
 
 
 
