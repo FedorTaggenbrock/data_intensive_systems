@@ -10,7 +10,6 @@ from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
-print(getcwd())
 def run_all_tests():
     clustering_settings = {
         'clustering_algorithm': 'kmodes',
