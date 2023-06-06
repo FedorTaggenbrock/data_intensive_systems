@@ -4,6 +4,9 @@ from data_visualization import plot_routes
 from distance_function import route_distance
 from clustering import run_clustering
 from os import getcwd
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 
 print(getcwd())
 def run_all_tests():
@@ -49,7 +52,34 @@ def plot_test():
     print("Initialized Spark.")
     encoded_spark_df, product_list = encode_data(spark, pd_df, False)
     encoded_pd_df = encoded_spark_df.toPandas()
-    print(encoded_pd_df.to_string())
+    # print(encoded_pd_df.to_string())
+
+    def flatten_dict(row):
+        flat_dict = {}
+        for col in row.index:
+            if isinstance(row[col], dict):
+                for key, value in row[col].items():
+                    flat_dict[f"{col}_{key}"] = float(value)
+        return pd.Series(flat_dict)
+
+    df_flattened = encoded_pd_df.apply(flatten_dict, axis=1)
+
+    # Step 2: Fill missing values with 0
+    df_flattened = df_flattened.fillna(0)
+
+    # Step 3: Perform dimensionality reduction
+
+    # Scale the data
+    scaler = StandardScaler()
+    df_scaled = scaler.fit_transform(df_flattened)
+
+    # Perform PCA
+    pca = PCA(n_components=2)
+    df_2d = pca.fit_transform(df_scaled)
+
+    # Convert back to DataFrame for easy handling
+    df_2d = pd.DataFrame(df_2d, columns=["PC1", "PC2"])
+    print(df_2d.to_string())
 
 
 
