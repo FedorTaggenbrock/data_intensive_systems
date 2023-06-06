@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from parse_data import parse_json_data, encode_data
-from data_visualization import plot_routes, plot_results
+from data_visualization import plot_routes, plot_encode
 from distance_function import route_distance
 from clustering import run_clustering
 from os import getcwd
@@ -43,22 +43,7 @@ def run_all_tests():
     return
 
 def plot_test():
-    clustering_settings = {
-        'clustering_algorithm': 'kmodes',
-        'k_values': [2, 3],
-        'max_iterations': 2,
-        'debug_flag': True
-    }
-
-    # main function which runs all other tests imported from different files
-    spark = SparkSession.builder.appName("Clustering").getOrCreate()
-    print("Initialized Spark.")
-
-    # Opletten dat bij het parsen de hoeveelheden van stad A-> stad B wel goed samengevoegd worden. Zie nu twee keer dezelfde from->to staan bij route 1 namelijk.
-    pd_df, num_routes = parse_json_data()
-    encoded_spark_df, product_list = encode_data(spark, pd_df, clustering_settings["debug_flag"])
-    plot_routes(encoded_spark_df)
-
+    plot_encode()
 
 
 
