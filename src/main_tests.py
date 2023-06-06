@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from parse_data import parse_json_data, encode_data
-from data_visualization import plot_routes, plot_encode
+from data_visualization import plot_routes
 from distance_function import route_distance
 from clustering import run_clustering
 from os import getcwd
