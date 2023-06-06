@@ -50,8 +50,11 @@ def kModes(data: RDD, k: int, clustering_settings) -> list:
         print("Distance between route 1 and 2 is given by: ")
         print(route_distance(two_routes[0], two_routes[1]))
 
+    def route_distance2(route1, route2):
+        return route_distance(route1, route2)
+
     centroids = [x for x in data.takeSample(withReplacement=False, num=k)]
-    map1 = data.map(lambda row: route_distance(row, two_routes[0]))
+    map1 = data.map(lambda row: route_distance2(row, two_routes[0]))
     print("map1", map1.collect())
     # clusters = data.map(lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid)), point)).groupByKey()
     # print("clusters1 = ", clusters.collect())
@@ -91,7 +94,6 @@ def dictionary_distance(dict1, dict2):
          set(dict1) | set(dict2)]))
 
 
-@udf
 def route_distance(route1, route2):
     columns = route1.__fields__[1:]
     intersection = 0
