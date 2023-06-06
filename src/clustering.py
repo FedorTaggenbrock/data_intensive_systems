@@ -77,22 +77,22 @@ def kModes(data: RDD, k: int, clustering_settings):
     #Iterate until convergence or until the maximum number of iterations is reached
     for i in range(clustering_settings["max_iterations"]):
         # Assign each point to the closest centroid
-        clusters = data.map(lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid)), point)).groupByKey()
+        clusters = data.map(lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid)), point))
 
         #Compute new centroids as the mode of the points in each cluster.
-        newCentroids = clusters.mapValues(lambda arrays: tuple([mode(x) for x in zip(*arrays)]) ).collect()
+        #newCentroids = clusters.groupByKey().mapValues(lambda arrays: tuple([mode(x) for x in zip(*arrays)]) ).collect()
 
         if clustering_settings["debug_flag"]:
             print("centroids = ", centroids)
-            print("clusters1 = ", clusters.collect())
-            print("newCentroids = ", newCentroids)
+            print("clusters = ", clusters)
+            #print("newCentroids = ", newCentroids)
 
-        # Update centroids
-        for oldCentroid, newCentroid in newCentroids:
-            index = centroids.index(oldCentroid)
-            centroids[index] = newCentroid
+        # # Update centroids
+        # for oldCentroid, newCentroid in newCentroids:
+        #     index = centroids.index(oldCentroid)
+        #     centroids[index] = newCentroid
 
-    return [list(x) for x in centroids]
+    return [] #[list(x) for x in centroids]
 
 
 
