@@ -89,7 +89,7 @@ def kModes(data: RDD, k: int, clustering_settings):
         print(route_distance(routes[2], routes[3]))
 
     def create_centroid(set_of_rows):
-        return two_routes[0]
+        return routes[0]
 
     centroids = [x for x in data.takeSample(withReplacement=False, num=k)]
 
