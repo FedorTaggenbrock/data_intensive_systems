@@ -7,13 +7,14 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
+from distance_functions import test_distance_function
 import matplotlib.pyplot as plt
 
 def run_all_tests():
     clustering_settings = {
         'clustering_algorithm': 'kmodes',
         'k_values': [2, 3],
-        'max_iterations': 2,
+        'max_iterations': 5,
         'debug_flag': True
     }
 
@@ -28,10 +29,13 @@ def run_all_tests():
     encoded_spark_df, product_list = encode_data(spark, pd_df, clustering_settings["debug_flag"])
     encoded_spark_rdd = encoded_spark_df.rdd
 
+    if clustering_settings["debug_flag"]:
+        test_distance_function(encoded_spark_rdd)
+
     print("Running run_clustering().")
     centroids = run_clustering(
-        clustering_settings=clustering_settings,
-        data=encoded_spark_rdd
+        data=encoded_spark_rdd,
+        clustering_settings=clustering_settings
         )
     print("The centroids are given by: ", centroids)
 

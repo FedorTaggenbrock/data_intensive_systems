@@ -6,7 +6,6 @@ from pyspark.sql.functions import udf
 import numpy as np
 import math
 
-
 def run_clustering(clustering_settings: dict, data: RDD) -> list[tuple]:
     '''Define variables to store results.'''
     # E.g. for kmodes: [(predicted_centroids, (k, init_mode)), ...]
@@ -16,9 +15,8 @@ def run_clustering(clustering_settings: dict, data: RDD) -> list[tuple]:
     if clustering_settings['clustering_algorithm'] == 'kmodes':
         for current_k in clustering_settings['k_values']:
             # TODO in the future add other parameters here.
-            C = ClusterDist()
             # Run clustering with current parameters
-            predicted_centroids = C.kModes(
+            predicted_centroids = kModes(
                 data=data,
                 k=current_k,
                 clustering_settings=clustering_settings
@@ -31,8 +29,9 @@ def run_clustering(clustering_settings: dict, data: RDD) -> list[tuple]:
 
     return results
 
-class ClusterDist:
-    def dictionary_distance(self, dict1, dict2):
+def kModes(data: RDD, k: int, clustering_settings):
+    #Painfull code duplication which is the only way I managed to make all the spark dependencies work
+    def dictionary_distance(dict1, dict2):
         # This function computes the normalized euclidean distance (in 0-1) for dict representations of (sparse) vectors.
         norm_dict1 = math.sqrt(np.sum(
             [int(float(v)) ** 2 for k, v in dict1.items()]))
@@ -41,7 +40,7 @@ class ClusterDist:
         return math.sqrt(np.sum(
             [(int(float(dict1.get(product, 0))) - int(float(dict2.get(product, 0)))) ** 2 for product in
              set(dict1) | set(dict2)])) / (norm_dict1 + norm_dict2)
-    def route_distance(self, route1, route2):
+    def route_distance(route1, route2):
         columns = route1.__fields__[1:]
         intersection = 0
         union = 0
@@ -53,55 +52,44 @@ class ClusterDist:
             if trip1 or trip2:
                 union += 1
                 if trip1 and trip2:
-                    intersection += (1 - self.dictionary_distance(route1[column], route2[column]))
+                    intersection += (1 - dictionary_distance(route1[column], route2[column]))
         if union != 0:
             dist = 1 - intersection / union
         else:
             dist = 1
         return dist
 
-    def kModes(self, data: RDD, k: int, clustering_settings):
-        """
-        Perform k-modes clustering on the given data. Assumes only one-hot encoded data?
+    def assign_row_to_centroid_key(row, centroids):
+        best_centroid = min(centroids, key=lambda centroid: route_distance(row, centroid))
+        return (best_centroid["route_id"], row)
 
-        Args:
-            distance (function): The distance function to use for clustering.
-            data (RDD): The RDD containing the data to cluster.
-            k (int): The number of clusters to create.
-            max iterations (int): The maximum number of iterations to perform.
+    def create_centroid(set_of_rows):
+        cluster_size = len(set_of_rows)
+        trips = set_of_rows[0].__fields__[1:]
+        for trip in trips:
+            num_nonzero =0
+            for row in set_of_rows:
+                if row[trip]:
+                    num_nonzero+=1
+            #if num_nonzero>(cluster_size/2):
+        return set_of_rows[0]
 
-        Returns:
-            list: A list of the centroids of the clusters.
-        """
+    centroids = [x for x in data.takeSample(withReplacement=False, num=k)]
+
+    # Iterate until convergence or until the maximum number of iterations is reached
+    for i in range(clustering_settings["max_iterations"]):
+        # Assign each point to the closest centroid
+        clusters = data.map(lambda row: assign_row_to_centroid_key(row, centroids))
+
+        newCentroids = clusters.groupByKey().mapValues(lambda set_of_rows: create_centroid(set_of_rows))
+
         if clustering_settings["debug_flag"]:
-            routes = data.collect()
-            for i in range(len(routes)):
-                for j in range(i, len(routes)):
-                    print("Distance between route ", i, " and ", j, " is given by: ")
-                    print(self.route_distance(routes[i], routes[j]))
+            print("centroids = ", centroids)
+            print("clusters = ", clusters.collect())
+            print("newCentroids = ", newCentroids.collect())
 
-        def assign_row_to_centroid_key(row, centroids):
-            best_centroid = min(centroids, key=lambda centroid: self.route_distance(row, centroid))
-            return (best_centroid["route_id"], row)
+        # Update centroids
+        centroids = [newCentroid for _, newCentroid in newCentroids.collect()]
 
-        def create_centroid(set_of_rows):
-            return routes[0]
+    return [list(x) for x in centroids]
 
-        centroids = [x for x in data.takeSample(withReplacement=False, num=k)]
-
-        # Iterate until convergence or until the maximum number of iterations is reached
-        for i in range(clustering_settings["max_iterations"]):
-            # Assign each point to the closest centroid
-            clusters = data.map(lambda row: assign_row_to_centroid_key(row, centroids))
-
-            newCentroids = clusters.groupByKey().mapValues(lambda set_of_rows: create_centroid(set_of_rows))
-
-            if clustering_settings["debug_flag"]:
-                print("centroids = ", centroids)
-                print("clusters = ", clusters.collect())
-                print("newCentroids = ", newCentroids.collect())
-
-            # Update centroids
-            centroids = [newCentroid for _, newCentroid in newCentroids.collect()]
-
-        return []  # [list(x) for x in centroids]
