@@ -84,7 +84,7 @@ def kModes(data: RDD, k: int, clustering_settings):
 
         if clustering_settings["debug_flag"]:
             print("centroids = ", centroids)
-            print("clusters = ", clusters)
+            print("clusters = ", clusters.collect())
             #print("newCentroids = ", newCentroids)
 
         # # Update centroids
