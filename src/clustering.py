@@ -34,7 +34,7 @@ def run_clustering(clustering_settings: dict, data: RDD) -> list[tuple]:
 
 
 
-def kModes(data: RDD, k: int, clustering_settings) -> list:
+def kModes(data: RDD, k: int, clustering_settings):
     """
     Perform k-modes clustering on the given data. Assumes only one-hot encoded data?
 
@@ -66,7 +66,6 @@ def kModes(data: RDD, k: int, clustering_settings) -> list:
                 if trip1 and trip2:
                     intersection += dictionary_distance(route1[column], route2[column])
         return intersection / union if union != 0 else 0.0
-
 
     if clustering_settings["debug_flag"]:
         two_routes = data.take(2)
