@@ -58,17 +58,22 @@ def kModes(data: RDD, k: int, clustering_settings):
         columns = route1.__fields__[1:]
         intersection = 0
         union = 0
+        intersecting_dist = 0
+        #Preferably vectorize this
         for column in columns:
             trip1 = any(route1[column])
             trip2 = any(route2[column])
             if trip1 or trip2:
                 union += 1
                 if trip1 and trip2:
-                    intersection += 1/dictionary_distance(route1[column], route2[column])
-        print("intersection = ", intersection)
-        print("union = ", union)
-
-        return 1 - intersection / union if union != 0 else 1
+                    intersection += 1
+                    intersecting_dist += dictionary_distance(route1[column], route2[column])
+        #Probably change this so that having the same trip with no overlapping goods does not increase the distance between two routes.
+        if union != 0 and intersecting_dist != 0:
+            dist = 1 - intersection/union/intersecting_dist
+        else:
+            dist = 1
+        return dist
 
     def assign_row_to_centroid(row, centroids):
         best_centroid = min(centroids, key=lambda centroid: route_distance(row, centroid))
