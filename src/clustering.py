@@ -50,9 +50,13 @@ def kModes(data: RDD, k: int, clustering_settings):
     def dictionary_distance(dict1, dict2):
         # This function computes the euclidean distance for dict representations of (sparse) vectors.
         # The get method is used to return a default value of 0 for keys that are not present in one of the dictionaries
+        norm_dict1 = math.sqrt(np.sum(
+            [v**2 for k,v in dict1]))
+        norm_dict2 = math.sqrt(np.sum(
+            [v**2 for k,v in dict2]))
         return math.sqrt(np.sum(
             [(int(float(dict1.get(product, 0))) - int(float(dict2.get(product, 0)))) ** 2 for product in
-             set(dict1) | set(dict2)]))
+             set(dict1) | set(dict2)]))/(norm_dict1+norm_dict2)
 
     def route_distance(route1, route2):
         columns = route1.__fields__[1:]
@@ -66,11 +70,10 @@ def kModes(data: RDD, k: int, clustering_settings):
             if trip1 or trip2:
                 union += 1
                 if trip1 and trip2:
-                    intersection += 1
-                    intersecting_dist += dictionary_distance(route1[column], route2[column])
+                    intersection += (1-dictionary_distance(route1[column], route2[column]))
         #Probably change this so that having the same trip with no overlapping goods does not increase the distance between two routes.
-        if union != 0 and intersecting_dist != 0:
-            dist = 1 - intersection/union/intersecting_dist
+        if union != 0:
+            dist = 1 - intersection/union
         else:
             dist = 1
         return dist
