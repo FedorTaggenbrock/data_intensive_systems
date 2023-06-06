@@ -88,12 +88,18 @@ def plot_test():
 
     plt.figure(figsize=(16, 10))
     plt.scatter(df_2d_pca['PC1'], df_2d_pca['PC2'])
-    plt.title('Scatter plot of PC1 vs PC2')
+    plt.title('Scatter plot of PCA')
     plt.xlabel('PC1')
     plt.ylabel('PC2')
     plt.show()
 
-    # Assume df_scaled is your scaled data from the previous PCA example
+    # Perform t-SNE ->
+    # t-SNE (t-Distributed Stochastic Neighbor Embedding) is a
+    # nonlinear dimensionality reduction technique that is
+    # particularly good at preserving local structure in the data,
+    # meaning that points which are close to each other in the
+    # high-dimensional space remain close to each other in the
+    # low-dimensional representation.
     tsne = TSNE(n_components=2)
     df_2d_tsne = tsne.fit_transform(df_scaled)
 
@@ -102,7 +108,7 @@ def plot_test():
 
     plt.figure(figsize=(16, 10))
     plt.scatter(df_2d_tsne['PC1'], df_2d_tsne['PC2'])
-    plt.title('Scatter plot of PC1 vs PC2')
+    plt.title('Scatter plot of t-SNE')
     plt.xlabel('PC1')
     plt.ylabel('PC2')
     plt.show()
