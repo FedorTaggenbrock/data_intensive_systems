@@ -3,11 +3,11 @@ from pyspark import RDD
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import udf
 
-from distance_function import route_distance
-import distance_function
+import numpy as np
+import math
 
 
-def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data: RDD) -> list[tuple]:
+def run_clustering(clustering_settings: dict, data: RDD) -> list[tuple]:
     '''Define variables to store results.'''
     # E.g. for kmodes: [(predicted_centroids, (k, init_mode)), ...]
     results = []
@@ -19,7 +19,6 @@ def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data
 
             # Run clustering with current parameters
             predicted_centroids = kModes(
-                spark_instance=spark_instance,
                 data=data,
                 k=current_k,
                 clustering_settings=clustering_settings
@@ -33,7 +32,7 @@ def run_clustering(spark_instance: SparkSession, clustering_settings: dict, data
     return results
 
 
-def kModes(spark_instance: SparkSession, data: RDD, k: int, clustering_settings) -> list:
+def kModes(data: RDD, k: int, clustering_settings) -> list:
     """
     Perform k-modes clustering on the given data. Assumes only one-hot encoded data?
 
@@ -46,17 +45,12 @@ def kModes(spark_instance: SparkSession, data: RDD, k: int, clustering_settings)
     Returns:
         list: A list of the centroids of the clusters.
     """
-
-    def row_func(row, row2):
-        return len(row) + len(row2)
-
-
+    if clustering_settings["debug_flag"]:
+        two_routes = data.take(2)
+        print("Distance between route 1 and 2 is given by: ")
+        print(route_distance(two_routes[0], two_routes[1]))
 
     centroids = [x for x in data.takeSample(withReplacement=False, num=k)]
-    two_routes = data.take(2)
-    print("Testing route_distance inside Kmodes")
-    print(route_distance(two_routes[0], two_routes[1]))
-    print("data:", data.collect())
     map1 = data.map(lambda row: route_distance(row, two_routes[0]))
     print("map1", map1.collect())
     #clusters = data.map(lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid)), point)).groupByKey()
@@ -89,8 +83,24 @@ def kModes(spark_instance: SparkSession, data: RDD, k: int, clustering_settings)
     # return [list(x) for x in centroids]
 
 
+def dictionary_distance(dict1, dict2):
+    #This function computes the euclidean distance for dict representations of (sparse) vectors.
+    #The get method is used to return a default value of 0 for keys that are not present in one of the dictionaries
+    return math.sqrt(np.sum([(int(float(dict1.get(product, 0))) - int(float(dict2.get(product, 0)))) ** 2 for product in set(dict1) | set(dict2)]))
+
+def route_distance(route1, route2):
+    columns = route1.__fields__[1:]
+    intersection = 0
+    union = 0
+    for column in columns:
+        trip1 = any(route1[column])
+        trip2 = any(route2[column])
+        if trip1 or trip2:
+            union += 1
+            if trip1 and trip2:
+                intersection += dictionary_distance(route1[column], route2[column])
+    return intersection / union if union != 0 else 0.0
 
 
 
-    
     

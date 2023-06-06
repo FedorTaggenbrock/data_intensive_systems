@@ -1,7 +1,6 @@
 from pyspark.sql import SparkSession
 from parse_data import parse_json_data, encode_data
 from data_visualization import plot_routes
-from clustering import route_distance
 from clustering import run_clustering
 from os import getcwd
 import pandas as pd
@@ -29,16 +28,10 @@ def run_all_tests():
     encoded_spark_df, product_list = encode_data(spark, pd_df, clustering_settings["debug_flag"])
     encoded_spark_rdd = encoded_spark_df.rdd
 
-    if clustering_settings["debug_flag"]:
-        two_routes = encoded_spark_rdd.take(2)
-        print("The distance between route 0 and route 1 is given by:")
-        print(route_distance(two_routes[0], two_routes[1]))
-
     print("Running run_clustering().")
     centroids = run_clustering(
-        spark_instance=spark,
         clustering_settings=clustering_settings,
-        data=encoded_spark_rdd,
+        data=encoded_spark_rdd
         )
     print("The centroids are given by: ", centroids)
 
