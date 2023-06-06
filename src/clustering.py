@@ -14,7 +14,7 @@ def run_clustering(clustering_settings: dict, data: RDD) -> list[tuple]:
 
     # Check which clustering algortihm to run
     if clustering_settings['clustering_algorithm'] == 'kmodes':
-        for current_k in clustering_settings['k_values']: 
+        for current_k in clustering_settings['k_values']:
             # TODO in the future add other parameters here.
 
             # Run clustering with current parameters
@@ -25,10 +25,10 @@ def run_clustering(clustering_settings: dict, data: RDD) -> list[tuple]:
             )
 
             # Store the settings, model, and metrics
-            results.append( (predicted_centroids, {'k':current_k}) )
+            results.append((predicted_centroids, {'k': current_k}))
     else:
         print("Clustering algorithm setting not recognized in run_and_tune().")
-    
+
     return results
 
 
@@ -50,17 +50,15 @@ def kModes(data: RDD, k: int, clustering_settings) -> list:
         print("Distance between route 1 and 2 is given by: ")
         print(route_distance(two_routes[0], two_routes[1]))
 
-    route_dist_udf = udf(route_distance)
-
     centroids = [x for x in data.takeSample(withReplacement=False, num=k)]
-    map1 = data.map(lambda row: route_dist_udf(row, two_routes[0]))
+    map1 = data.map(lambda row: route_distance(row, two_routes[0]))
     print("map1", map1.collect())
-    #clusters = data.map(lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid)), point)).groupByKey()
-    #print("clusters1 = ", clusters.collect())
+    # clusters = data.map(lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid)), point)).groupByKey()
+    # print("clusters1 = ", clusters.collect())
 
     return []
 
-    #print(getenv('PATH'))
+    # print(getenv('PATH'))
 
     # Iterate until convergence or until the maximum number of iterations is reached
     # for i in range(clustering_settings["max_iterations"]):
@@ -92,6 +90,8 @@ def dictionary_distance(dict1, dict2):
         [(int(float(dict1.get(product, 0))) - int(float(dict2.get(product, 0)))) ** 2 for product in
          set(dict1) | set(dict2)]))
 
+
+@udf
 def route_distance(route1, route2):
     columns = route1.__fields__[1:]
     intersection = 0
@@ -104,7 +104,3 @@ def route_distance(route1, route2):
             if trip1 and trip2:
                 intersection += dictionary_distance(route1[column], route2[column])
     return intersection / union if union != 0 else 0.0
-
-
-
-    
