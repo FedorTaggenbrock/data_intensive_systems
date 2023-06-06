@@ -48,8 +48,7 @@ def kModes(data: RDD, k: int, clustering_settings):
         list: A list of the centroids of the clusters.
     """
     def dictionary_distance(dict1, dict2):
-        # This function computes the euclidean distance for dict representations of (sparse) vectors.
-        # The get method is used to return a default value of 0 for keys that are not present in one of the dictionaries
+        # This function computes the normalized euclidean distance (in 0-1) for dict representations of (sparse) vectors.
         norm_dict1 = math.sqrt(np.sum(
             [v**2 for k,v in dict1]))
         norm_dict2 = math.sqrt(np.sum(
@@ -71,7 +70,6 @@ def kModes(data: RDD, k: int, clustering_settings):
                 union += 1
                 if trip1 and trip2:
                     intersection += (1-dictionary_distance(route1[column], route2[column]))
-        #Probably change this so that having the same trip with no overlapping goods does not increase the distance between two routes.
         if union != 0:
             dist = 1 - intersection/union
         else:
