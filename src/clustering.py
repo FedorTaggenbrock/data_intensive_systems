@@ -73,36 +73,26 @@ def kModes(data: RDD, k: int, clustering_settings):
         print(route_distance(two_routes[0], two_routes[1]))
 
     centroids = [x for x in data.takeSample(withReplacement=False, num=k)]
-    map1 = data.map(lambda row: route_distance(row, two_routes[0]))
-    print("map1", map1.collect())
-    # clusters = data.map(lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid)), point)).groupByKey()
-    # print("clusters1 = ", clusters.collect())
 
-    return []
+    #Iterate until convergence or until the maximum number of iterations is reached
+    for i in range(clustering_settings["max_iterations"]):
+        # Assign each point to the closest centroid
+        clusters = data.map(lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid)), point)).groupByKey()
 
-    # print(getenv('PATH'))
+        #Compute new centroids as the mode of the points in each cluster.
+        newCentroids = clusters.mapValues(lambda arrays: tuple([mode(x) for x in zip(*arrays)]) ).collect()
 
-    # Iterate until convergence or until the maximum number of iterations is reached
-    # for i in range(clustering_settings["max_iterations"]):
-    #     if clustering_settings["debug_flag"]:
-    #         print("centroids = ", centroids)
-    #     # Assign each point to the closest centroid
-    #     clusters = data.map(lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid)), point)).groupByKey()
-    #     print("clusters1 = ", clusters.collect())
-    #
-    # return []
-    #
-    #     #Compute new centroids as the mode of the points in each cluster.
-    #     newCentroids = clusters.mapValues(lambda arrays: tuple([mode(x) for x in zip(*arrays)]) ).collect()
-    #
-    #     #print("newCentroids = ", newCentroids)
-    #
-    #     # Update centroids
-    #     for oldCentroid, newCentroid in newCentroids:
-    #         index = centroids.index(oldCentroid)
-    #         centroids[index] = newCentroid
-    #
-    # return [list(x) for x in centroids]
+        if clustering_settings["debug_flag"]:
+            print("centroids = ", centroids)
+            print("clusters1 = ", clusters.collect())
+            print("newCentroids = ", newCentroids)
+
+        # Update centroids
+        for oldCentroid, newCentroid in newCentroids:
+            index = centroids.index(oldCentroid)
+            centroids[index] = newCentroid
+
+    return [list(x) for x in centroids]
 
 
 
