@@ -90,7 +90,7 @@ def kModes(data: RDD, k: int, clustering_settings):
             print("newCentroids = ", newCentroids.collect())
 
         # Update centroids
-        #centroids = [newCentroid for _, newCentroid in newCentroids.collect()]
+        centroids = [newCentroid for _, newCentroid in newCentroids.collect()]
 
     return [] #[list(x) for x in centroids]
 
