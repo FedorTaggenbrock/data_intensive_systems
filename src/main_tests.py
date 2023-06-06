@@ -43,7 +43,13 @@ def run_all_tests():
     return
 
 def plot_test():
-    plot_encode()
+    # Opletten dat bij het parsen de hoeveelheden van stad A-> stad B wel goed samengevoegd worden. Zie nu twee keer dezelfde from->to staan bij route 1 namelijk.
+    pd_df, num_routes = parse_json_data('../data/ex_example_route.json')
+    spark = SparkSession.builder.appName("Clustering").getOrCreate()
+    print("Initialized Spark.")
+    encoded_spark_df, product_list = encode_data(spark, pd_df, False)
+    encoded_pd_df = encoded_spark_df.toPandas()
+    print(encoded_pd_df.to_string())
 
 
 
