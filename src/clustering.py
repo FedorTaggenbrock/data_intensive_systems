@@ -64,7 +64,7 @@ def kModes(data: RDD, k: int, clustering_settings):
             if trip1 or trip2:
                 union += 1
                 if trip1 and trip2:
-                    intersection += 1 #dictionary_distance(route1[column], route2[column])
+                    intersection += 1/dictionary_distance(route1[column], route2[column])
         print("intersection = ", intersection)
         print("union = ", union)
 
