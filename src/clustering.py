@@ -70,7 +70,7 @@ def kModes(data: RDD, k: int, clustering_settings):
     two_routes = data.take(2)
     if clustering_settings["debug_flag"]:
         print("Distance between route 1 and 2 is given by: ")
-        print(route_distance(two_routes[0], two_routes[1]))
+        print(route_distance(two_routes[1], two_routes[1]))
 
     def create_centroid(set_of_rows):
         return two_routes[0]
