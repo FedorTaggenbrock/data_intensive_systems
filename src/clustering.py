@@ -67,10 +67,15 @@ def kModes(data: RDD, k: int, clustering_settings):
                     intersection += dictionary_distance(route1[column], route2[column])
         return intersection / union if union != 0 else 0.0
 
+    def assign_row_to_centroid(row, centroids):
+        best_centroid = min(centroids, key=lambda centroid: route_distance(row, centroid))
+        return (best_centroid["route_id"], (route_distance(row, best_centroid), row))
+
+
     two_routes = data.take(2)
     if clustering_settings["debug_flag"]:
         print("Distance between route 1 and 2 is given by: ")
-        print(route_distance(two_routes[1], two_routes[1]))
+        print(route_distance(two_routes[0], two_routes[1]))
 
     def create_centroid(set_of_rows):
         return two_routes[0]
@@ -80,7 +85,7 @@ def kModes(data: RDD, k: int, clustering_settings):
     #Iterate until convergence or until the maximum number of iterations is reached
     for i in range(clustering_settings["max_iterations"]):
         # Assign each point to the closest centroid
-        clusters = data.map(lambda point: (min(centroids, key=lambda centroid: route_distance(point, centroid))["route_id"], point))
+        clusters = data.map(lambda row: assign_row_to_centroid(row, centroids))
 
         newCentroids = clusters.groupByKey().mapValues(lambda set_of_rows:  create_centroid(set_of_rows))
 
