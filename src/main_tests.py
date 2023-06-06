@@ -7,6 +7,7 @@ from os import getcwd
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
 print(getcwd())
@@ -47,13 +48,14 @@ def run_all_tests():
     return
 
 def plot_test():
-    # Opletten dat bij het parsen de hoeveelheden van stad A-> stad B wel goed samengevoegd worden. Zie nu twee keer dezelfde from->to staan bij route 1 namelijk.
+    # Load data and create data frame
     pd_df, num_routes = parse_json_data()
+    # Create spark session
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
-    print("Initialized Spark.")
+    # Encode each route as one row using spark
     encoded_spark_df, product_list = encode_data(spark, pd_df, False)
+    # Convert back to pandas for processing
     encoded_pd_df = encoded_spark_df.toPandas()
-    # print(encoded_pd_df.to_string())
 
     def flatten_dict(row):
         flat_dict = {}
@@ -62,28 +64,44 @@ def plot_test():
                 for key, value in row[col].items():
                     flat_dict[f"{col}_{key}"] = float(value)
         return pd.Series(flat_dict)
-
+    # Flatten the dataframe that contains dicts
     df_flattened = encoded_pd_df.apply(flatten_dict, axis=1)
 
-    # Step 2: Fill missing values with 0
+    # Fill missing values with 0's
     df_flattened = df_flattened.fillna(0)
 
-    # Step 3: Perform dimensionality reduction
-
-    # Scale the data
+    # Perform dimensionality reduction by first scaling
     scaler = StandardScaler()
     df_scaled = scaler.fit_transform(df_flattened)
 
-    # Perform PCA
+    # Perform PCA ->
+    # PCA (Principal Component Analysis) is a technique used for dimensionality
+    # reduction that identifies the axes in the data space along which the data
+    # varies the most, and uses these axes to reorient the data,
+    # thereby preserving the maximum amount of variation in the data.
     pca = PCA(n_components=2)
-    df_2d = pca.fit_transform(df_scaled)
+    df_2d_pca = pca.fit_transform(df_scaled)
 
     # Convert back to DataFrame for easy handling
-    df_2d = pd.DataFrame(df_2d, columns=["PC1", "PC2"])
-    print(df_2d.to_string())
+    df_2d_pca = pd.DataFrame(df_2d_pca, columns=["PC1", "PC2"])
+    print(df_2d_pca.to_string())
 
     plt.figure(figsize=(16, 10))
-    plt.scatter(df_2d['PC1'], df_2d['PC2'])
+    plt.scatter(df_2d_pca['PC1'], df_2d_pca['PC2'])
+    plt.title('Scatter plot of PC1 vs PC2')
+    plt.xlabel('PC1')
+    plt.ylabel('PC2')
+    plt.show()
+
+    # Assume df_scaled is your scaled data from the previous PCA example
+    tsne = TSNE(n_components=2)
+    df_2d_tsne = tsne.fit_transform(df_scaled)
+
+    # Convert back to DataFrame for easy handling
+    df_2d_tsne = pd.DataFrame(df_2d_tsne, columns=["Dim1", "Dim2"])
+
+    plt.figure(figsize=(16, 10))
+    plt.scatter(df_2d_tsne['PC1'], df_2d_tsne['PC2'])
     plt.title('Scatter plot of PC1 vs PC2')
     plt.xlabel('PC1')
     plt.ylabel('PC2')
