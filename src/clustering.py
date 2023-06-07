@@ -66,16 +66,14 @@ def kModes(data: RDD, k: int, clustering_settings):
     def create_centroid(set_of_rows, cluster_counter):
         print("set of rows", set_of_rows)
         # cluster_size = len(set_of_rows)
-        # trips = set_of_rows[0].__fields__[1:]
-        # for trip in trips:
-        #     num_nonzero =0
-        #     for row in set_of_rows:
-        #         if row[trip]:
-        #             num_nonzero+=1
-        #     #if num_nonzero>(cluster_size/2):
+        # num_nonzero =0
+        # for row in set_of_rows:
+        #     if row[trip]:
+        #         num_nonzero+=1
+        # #if num_nonzero>(cluster_size/2):
         # cluster_counter += 1
-        # print(cluster_counter)
-        return set_of_rows[0]
+        print(cluster_counter)
+        return []
 
     centroids = [x for x in data.takeSample(withReplacement=False, num=k)]
 
