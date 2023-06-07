@@ -63,7 +63,7 @@ def kModes(data: RDD, k: int, clustering_settings):
         best_centroid = min(centroids, key=lambda centroid: route_distance(row, centroid))
         return (best_centroid["route_id"], row)
 
-    def create_centroid(set_of_rows):
+    def create_centroid(set_of_rows, cluster_counter):
         cluster_size = len(set_of_rows)
         trips = set_of_rows[0].__fields__[1:]
         for trip in trips:
@@ -72,6 +72,8 @@ def kModes(data: RDD, k: int, clustering_settings):
                 if row[trip]:
                     num_nonzero+=1
             #if num_nonzero>(cluster_size/2):
+        cluster_counter += 1
+        print(cluster_counter)
         return set_of_rows[0]
 
     centroids = [x for x in data.takeSample(withReplacement=False, num=k)]
@@ -80,8 +82,8 @@ def kModes(data: RDD, k: int, clustering_settings):
     for i in range(clustering_settings["max_iterations"]):
         # Assign each point to the closest centroid
         clusters = data.map(lambda row: assign_row_to_centroid_key(row, centroids))
-
-        newCentroids = clusters.groupByKey().mapValues(lambda set_of_rows: create_centroid(set_of_rows))
+        cluster_counter = 0
+        newCentroids = clusters.groupByKey().mapValues(lambda set_of_rows: create_centroid(set_of_rows, cluster_counter))
 
         if clustering_settings["debug_flag"]:
             print("centroids = ", centroids)
