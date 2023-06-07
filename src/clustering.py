@@ -84,7 +84,7 @@ def kModes(data: RDD, k: int, clustering_settings):
         for row in set_of_rows:
             row_score = 0
             for it, trip in enumerate(row):
-                if trip and trips_to_keep[it]:
+                if it != 0 and trip and trips_to_keep[it]:
                     row_score += 1
             row_scores.append(row_score)
         max_score = 0
