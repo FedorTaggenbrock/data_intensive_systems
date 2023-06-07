@@ -70,7 +70,7 @@ def kModes(data: RDD, k: int, clustering_settings):
         #     if row[trip]:
         #         num_nonzero+=1
         # #if num_nonzero>(cluster_size/2):
-        # cluster_counter += 1
+        cluster_counter += 1
         return (cluster_counter, set_of_rows)
 
     centroids = [x for x in data.takeSample(withReplacement=False, num=k)]
