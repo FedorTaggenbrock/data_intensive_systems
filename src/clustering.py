@@ -1,7 +1,9 @@
+from copy import copy
 from statistics import mode
 from pyspark import RDD
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import udf
+from functools import reduce
 
 import numpy as np
 import math
@@ -77,15 +79,28 @@ def kModes(data: RDD, k: int, clustering_settings):
             for it, trip in enumerate(row):
                 if trip:
                     trips_to_keep[it] += 1
-        return trips_to_keep
+        trips_to_keep = trips_to_keep >= size_of_set // 2
+        row_scores = []
+        for row in set_of_rows:
+            row_score = 0
+            for it, trip in enumerate(row):
+                if trip and trips_to_keep[it]:
+                    row_score += 1
+            row_scores.append(row_score)
+        max_score = 0
+        for it, row in enumerate(set_of_rows):
+            if row_scores[it] > max_score:
+                best_row = row
+                max_score = row_scores[it]
+        return best_row
 
-    num = 0
     centroids = data.takeSample(withReplacement=False, num=k)
 
     # Iterate until convergence or until the maximum number of iterations is reached
     for i in range(clustering_settings["max_iterations"]):
         # Assign each point to the closest centroid
         clusters = data.map(lambda row: assign_row_to_centroid_key(row, centroids))
+
         newCentroids = clusters.groupByKey().map(lambda key_rows: create_centroid(key_rows[1]))
 
         if clustering_settings["debug_flag"]:
