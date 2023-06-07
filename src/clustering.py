@@ -92,7 +92,7 @@ def kModes(data: RDD, k: int, clustering_settings):
             if row_scores[it] > max_score:
                 best_row = row
                 max_score = row_scores[it]
-        return best_row
+        return best_row["route_id"]
 
     centroids = data.takeSample(withReplacement=False, num=k)
     if clustering_settings["debug_flag"]:
