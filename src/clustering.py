@@ -6,6 +6,7 @@ from pyspark.sql.functions import udf
 import numpy as np
 import math
 
+
 def run_clustering(clustering_settings: dict, data: RDD) -> list[tuple]:
     '''Define variables to store results.'''
     # E.g. for kmodes: [(predicted_centroids, (k, init_mode)), ...]
@@ -29,8 +30,9 @@ def run_clustering(clustering_settings: dict, data: RDD) -> list[tuple]:
 
     return results
 
+
 def kModes(data: RDD, k: int, clustering_settings):
-    #Painfull code duplication which is the only way I managed to make all the spark dependencies work
+    # Painfull code duplication which is the only way I managed to make all the spark dependencies work
     def dictionary_distance(dict1, dict2):
         # This function computes the normalized euclidean distance (in 0-1) for dict representations of (sparse) vectors.
         norm_dict1 = math.sqrt(np.sum(
@@ -40,6 +42,7 @@ def kModes(data: RDD, k: int, clustering_settings):
         return math.sqrt(np.sum(
             [(int(float(dict1.get(product, 0))) - int(float(dict2.get(product, 0)))) ** 2 for product in
              set(dict1) | set(dict2)])) / (norm_dict1 + norm_dict2)
+
     def route_distance(route1, route2):
         columns = route1.__fields__[1:]
         intersection = 0
@@ -47,12 +50,12 @@ def kModes(data: RDD, k: int, clustering_settings):
         intersecting_dist = 0
         # Preferably vectorize this
         for column in columns:
-            trip1 = any(route1[column])
-            trip2 = any(route2[column])
+            trip1 = route1[column]
+            trip2 = route2[column]
             if trip1 or trip2:
                 union += 1
                 if trip1 and trip2:
-                    intersection += (1 - dictionary_distance(route1[column], route2[column]))
+                    intersection += (1 - dictionary_distance(trip1, trip2))
         if union != 0:
             dist = 1 - intersection / union
         else:
@@ -64,13 +67,17 @@ def kModes(data: RDD, k: int, clustering_settings):
         return (best_centroid["route_id"], row)
 
     def create_centroid(set_of_rows):
-        # cluster_size = len(set_of_rows)
-        # num_nonzero =0
-        # for row in set_of_rows:
-        #     if row[trip]:
-        #         num_nonzero+=1
-        # #if num_nonzero>(cluster_size/2):
-        return
+        size_of_set = len(set_of_rows)
+        trips_to_keep = []
+        first_row = True
+        for row in set_of_rows:
+            if first_row:
+                trips_to_keep = np.zeros(len(row))
+                first_row = False
+            for it, trip in enumerate(row):
+                if trip:
+                    trips_to_keep[it] += 1
+        return trips_to_keep
 
     num = 0
     centroids = data.takeSample(withReplacement=False, num=k)
@@ -79,7 +86,7 @@ def kModes(data: RDD, k: int, clustering_settings):
     for i in range(clustering_settings["max_iterations"]):
         # Assign each point to the closest centroid
         clusters = data.map(lambda row: assign_row_to_centroid_key(row, centroids))
-        newCentroids = clusters.groupByKey().map(lambda kv: create_centroid(kv[1]))
+        newCentroids = clusters.groupByKey().map(lambda key_rows: create_centroid(key_rows[1]))
 
         if clustering_settings["debug_flag"]:
             print("centroids = ", centroids)
@@ -90,4 +97,3 @@ def kModes(data: RDD, k: int, clustering_settings):
         centroids = [newCentroid for _, newCentroid in newCentroids.collect()]
 
     return [list(x) for x in centroids]
-

@@ -17,8 +17,8 @@ def route_distance(route1, route2):
     intersecting_dist = 0
     # Preferably vectorize this
     for column in columns:
-        trip1 = any(route1[column])
-        trip2 = any(route2[column])
+        trip1 = route1[column]
+        trip2 = route2[column]
         if trip1 or trip2:
             union += 1
             if trip1 and trip2:
