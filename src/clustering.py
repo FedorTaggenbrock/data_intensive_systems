@@ -101,9 +101,9 @@ def kModes(data: RDD, k: int, clustering_settings):
     # Iterate until convergence or until the maximum number of iterations is reached
     for i in range(clustering_settings["max_iterations"]):
         # Assign each point to the closest centroid
-        clusters = data.map(lambda row: assign_row_to_centroid_key(row, centroids))
+        clusters = data.map(lambda row: assign_row_to_centroid_key(row, centroids)).groupByKey()
 
-        centroids = clusters.groupByKey().map(lambda key_rows: create_centroid(key_rows[1])).collect()
+        centroids = clusters.map(lambda key_rows: create_centroid(key_rows[1])).collect()
 
         if clustering_settings["debug_flag"]:
             print("clusters = ", clusters.collect())
