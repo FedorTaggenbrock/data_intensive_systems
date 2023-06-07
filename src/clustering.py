@@ -103,10 +103,10 @@ def kModes(data: RDD, k: int, clustering_settings):
         # Assign each point to the closest centroid
         clusters = data.map(lambda row: assign_row_to_centroid_key(row, centroids))
 
-        #centroids = clusters.groupByKey().map(lambda key_rows: create_centroid(key_rows[1]))
+        new_centroids = clusters.groupByKey().map(lambda key_rows: create_centroid(key_rows[1]))
 
         if clustering_settings["debug_flag"]:
             print("clusters = ", clusters.collect())
-            #print("centroids = ", centroids.collect())
+            print("new_centroids = ", new_centroids.collect())
 
     return [list(x) for x in centroids]
