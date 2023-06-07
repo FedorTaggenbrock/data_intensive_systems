@@ -90,9 +90,9 @@ def kModes(data: RDD, k: int, clustering_settings):
         max_score = 0
         for it, row in enumerate(set_of_rows):
             if row_scores[it] > max_score:
-                best_row_id = row["route_id"]
+                best_row = row
                 max_score = row_scores[it]
-        return best_row_id
+        return best_row
 
     centroids = data.takeSample(withReplacement=False, num=k)
     if clustering_settings["debug_flag"]:
