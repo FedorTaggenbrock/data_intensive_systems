@@ -95,20 +95,18 @@ def kModes(data: RDD, k: int, clustering_settings):
         return best_row
 
     centroids = data.takeSample(withReplacement=False, num=k)
+    if clustering_settings["debug_flag"]:
+        print("centroids = ", centroids)
 
     # Iterate until convergence or until the maximum number of iterations is reached
     for i in range(clustering_settings["max_iterations"]):
         # Assign each point to the closest centroid
         clusters = data.map(lambda row: assign_row_to_centroid_key(row, centroids))
 
-        newCentroids = clusters.groupByKey().map(lambda key_rows: create_centroid(key_rows[1]))
+        centroids = clusters.groupByKey().map(lambda key_rows: create_centroid(key_rows[1]))
 
         if clustering_settings["debug_flag"]:
-            print("centroids = ", centroids)
+            print("centroids = ", centroids.collect())
             print("clusters = ", clusters.collect())
-            print("newCentroids = ", newCentroids.collect())
-
-        # Update centroids
-        centroids = [newCentroid for _, newCentroid in newCentroids.collect()]
 
     return [list(x) for x in centroids]
