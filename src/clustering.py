@@ -72,7 +72,8 @@ def kModes(data: RDD, k: int, clustering_settings):
         # #if num_nonzero>(cluster_size/2):
         return
 
-    centroids = data.takeSample(withReplacement=False, num=k)
+    num = 0
+    centroids = data.takeSample(withReplacement=False, num=k).map(lambda row: (row["route_id"], row))
 
     # Iterate until convergence or until the maximum number of iterations is reached
     for i in range(clustering_settings["max_iterations"]):
