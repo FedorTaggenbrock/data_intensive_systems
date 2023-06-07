@@ -4,7 +4,7 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.decomposition import PCA
 from pyspark.sql import SparkSession
 from parse_data import parse_json_data, encode_data
-from distance_function import route_distance
+from distance_functions import route_distance
 from clustering import run_clustering
 import matplotlib.pyplot as plt
 
