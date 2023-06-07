@@ -64,6 +64,7 @@ def kModes(data: RDD, k: int, clustering_settings):
         return (best_centroid["route_id"], row)
 
     def create_centroid(set_of_rows, cluster_counter):
+        print("set of rows", set_of_rows)
         cluster_size = len(set_of_rows)
         trips = set_of_rows[0].__fields__[1:]
         for trip in trips:
