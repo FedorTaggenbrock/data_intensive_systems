@@ -73,13 +73,13 @@ def kModes(data: RDD, k: int, clustering_settings):
         return
 
     num = 0
-    centroids = data.takeSample(withReplacement=False, num=k).map(lambda row: (row["route_id"], row))
+    centroids = data.takeSample(withReplacement=False, num=k)
 
     # Iterate until convergence or until the maximum number of iterations is reached
     for i in range(clustering_settings["max_iterations"]):
         # Assign each point to the closest centroid
         clusters = data.map(lambda row: assign_row_to_centroid_key(row, centroids))
-        newCentroids = clusters.groupByKey().mapValues(lambda set_of_rows: create_centroid(set_of_rows))
+        newCentroids = clusters.groupByKey().map(lambda key, set_of_rows: create_centroid(set_of_rows))
 
         if clustering_settings["debug_flag"]:
             print("centroids = ", centroids)
