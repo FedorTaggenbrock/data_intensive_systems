@@ -19,6 +19,7 @@ def run_clustering(clustering_settings: dict, data: RDD) -> list[tuple]:
         for current_k in clustering_settings['k_values']:
             # TODO in the future add other parameters here.
             # Run clustering with current parameters
+            print("Performing clustering with k= ", current_k)
             predicted_centroids = kModes(
                 data=data,
                 k=current_k,
