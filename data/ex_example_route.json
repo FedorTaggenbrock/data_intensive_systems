@@ -798,7 +798,8 @@
             "from":"Breda",
             "to":"Maastricht",
             "merchandise":{
-               "mustard":8
+               "mustard":8,
+               "sauce": 10
             }
          },
          {
@@ -844,7 +845,6 @@
          }
       ]
    },
-
    {
       "id":8,
       "route":[
