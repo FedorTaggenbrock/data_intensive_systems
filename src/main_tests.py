@@ -100,7 +100,7 @@ def plot_test():
     # meaning that points which are close to each other in the
     # high-dimensional space remain close to each other in the
     # low-dimensional representation.
-    tsne = TSNE(n_components=2)
+    tsne = TSNE(n_components=2, perplexity=30)
     df_2d_tsne = tsne.fit_transform(df_scaled)
 
     # Convert back to DataFrame for easy handling
