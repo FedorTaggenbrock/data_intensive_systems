@@ -53,7 +53,7 @@ def plot_test():
     pd_df, num_routes = parse_json_data('data_intensive_systems/data/10000_actual_routes.json')
     encoded_pd_df = convert_pd_df_to_one_row(pd_df)
 
-    pd_df_st, num_routes = parse_json_data('data_intensive_systems/data/001_standard_route.json')
+    pd_df_st, num_routes = parse_json_data('data_intensive_systems/data/10_0.25_standard_route.json')
     encoded_pd_df_st = convert_pd_df_to_one_row(pd_df_st)
 
     def flatten_dict(row):
