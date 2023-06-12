@@ -1,5 +1,4 @@
 import json
-import ijson
 import pandas as pd
 from pyspark.sql.functions import collect_list, udf
 from pyspark.sql import SparkSession
