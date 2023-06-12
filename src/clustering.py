@@ -110,6 +110,7 @@ def kModes(data: RDD, k: int, clustering_settings):
         centroids = clusters.map(lambda key_rows: create_centroid(key_rows[1])).collect()
 
         if clustering_settings["debug_flag"]:
+            print("iteration ", i, ": ")
             print("clusters = ", clusters.collect())
             print("centroids = ", centroids)
 
