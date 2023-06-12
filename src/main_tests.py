@@ -72,7 +72,7 @@ def plot_test():
     # Perform dimensionality reduction by first scaling
     scaler = StandardScaler()
     df_scaled = scaler.fit_transform(df_flattened)
-
+    print(df_scaled.shape)
     # Flatten and scale the standard route
     # df_st_flattened = encoded_pd_df_st.apply(flatten_dict, axis=1)
     # df_st_flattened = df_st_flattened.fillna(0)
