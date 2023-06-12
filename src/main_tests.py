@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from parse_data import parse_json_data, encode_data
-from data_visualization import plot_routes
+from data_visualization import plot_routes, convert_pd_df_to_one_row
 from clustering import run_clustering
 from os import getcwd
 import pandas as pd
@@ -44,13 +44,11 @@ def run_all_tests():
 
 def plot_test():
     # Load data and create data frame
-    pd_df, num_routes = parse_json_data()
-    # Create spark session
-    spark = SparkSession.builder.appName("Clustering").getOrCreate()
-    # Encode each route as one row using spark
-    encoded_spark_df, product_list = encode_data(spark, pd_df, False)
-    # Convert back to pandas for processing
-    encoded_pd_df = encoded_spark_df.toPandas()
+    pd_df, num_routes = parse_json_data('data_intensive_systems/data/10000_actual_routes.json')
+    encoded_pd_df = convert_pd_df_to_one_row(pd_df)
+
+    pd_df_st, num_routes = parse_json_data('data_intensive_systems/data/001_standard_route.json')
+    encoded_pd_df_st = convert_pd_df_to_one_row(pd_df_st)
 
     def flatten_dict(row):
         flat_dict = {}
@@ -69,6 +67,10 @@ def plot_test():
     scaler = StandardScaler()
     df_scaled = scaler.fit_transform(df_flattened)
 
+    # Flatten and scale the standard route
+    df_st_flattened = encoded_pd_df_st.apply(flatten_dict, axis=1)
+    df_st_flattened = df_st_flattened.fillna(0)
+    df_st_scaled = scaler.fit_transform(df_st_flattened)
     # Perform PCA ->
     # PCA (Principal Component Analysis) is a technique used for dimensionality
     # reduction that identifies the axes in the data space along which the data
@@ -79,10 +81,14 @@ def plot_test():
 
     # Convert back to DataFrame for easy handling
     df_2d_pca = pd.DataFrame(df_2d_pca, columns=["PC1", "PC2"])
-    print(df_2d_pca.to_string())
+    # print(df_2d_pca.to_string())
+    df_st_2d_pca = pca.fit_transform(df_st_scaled)
+    df_st_2d_pca = pd.DataFrame(df_st_2d_pca, columns=["PC1", "PC2"])
+
 
     plt.figure(figsize=(16, 10))
-    plt.scatter(df_2d_pca['PC1'], df_2d_pca['PC2'])
+    plt.scatter(df_2d_pca['PC1'], df_2d_pca['PC2'], color='blue')
+    plt.scatter(df_st_2d_pca['PC1'], df_st_2d_pca['PC2'], color='red')
     plt.title('Scatter plot of PCA')
     plt.xlabel('PC1')
     plt.ylabel('PC2')
