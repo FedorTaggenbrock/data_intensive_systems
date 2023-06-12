@@ -110,10 +110,10 @@ def plot_test():
     # high-dimensional space remain close to each other in the
     # low-dimensional representation.
     tsne = TSNE(n_components=2, perplexity=3)
-    df_2d_tsne = tsne.fit_transform(df_scaled)
+    # df_2d_tsne = tsne.fit_transform(df_scaled)
 
     # Convert back to DataFrame for easy handling
-    df_2d_tsne = pd.DataFrame(df_2d_tsne, columns=["Dim1", "Dim2"])
+    # df_2d_tsne = pd.DataFrame(df_2d_tsne, columns=["Dim1", "Dim2"])
 
     # Also for the standard routes
     df_st_2d_tsne = tsne.fit_transform(df_st_scaled)
