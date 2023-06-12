@@ -53,8 +53,8 @@ def plot_test():
     pd_df, num_routes = parse_json_data('data_intensive_systems/data/10000_actual_routes.json')
     encoded_pd_df = convert_pd_df_to_one_row(pd_df)
 
-    pd_df_st, num_routes = parse_json_data('data_intensive_systems/data/001_standard_route.json')
-    encoded_pd_df_st = convert_pd_df_to_one_row(pd_df_st)
+    # pd_df_st, num_routes = parse_json_data('data_intensive_systems/data/001_standard_route.json')
+    # encoded_pd_df_st = convert_pd_df_to_one_row(pd_df_st)
 
     def flatten_dict(row):
         flat_dict = {}
@@ -74,9 +74,9 @@ def plot_test():
     df_scaled = scaler.fit_transform(df_flattened)
 
     # Flatten and scale the standard route
-    df_st_flattened = encoded_pd_df_st.apply(flatten_dict, axis=1)
-    df_st_flattened = df_st_flattened.fillna(0)
-    df_st_scaled = scaler.fit_transform(df_st_flattened)
+    # df_st_flattened = encoded_pd_df_st.apply(flatten_dict, axis=1)
+    # df_st_flattened = df_st_flattened.fillna(0)
+    # df_st_scaled = scaler.fit_transform(df_st_flattened)
     # Perform PCA ->
     # PCA (Principal Component Analysis) is a technique used for dimensionality
     # reduction that identifies the axes in the data space along which the data
@@ -88,13 +88,13 @@ def plot_test():
     # Convert back to DataFrame for easy handling
     df_2d_pca = pd.DataFrame(df_2d_pca, columns=["PC1", "PC2"])
     # print(df_2d_pca.to_string())
-    df_st_2d_pca = pca.fit_transform(df_st_scaled)
-    df_st_2d_pca = pd.DataFrame(df_st_2d_pca, columns=["PC1", "PC2"])
+    # df_st_2d_pca = pca.fit_transform(df_st_scaled)
+    # df_st_2d_pca = pd.DataFrame(df_st_2d_pca, columns=["PC1", "PC2"])
 
 
     plt.figure(figsize=(16, 10))
     plt.scatter(df_2d_pca['PC1'], df_2d_pca['PC2'], color='blue')
-    plt.scatter(df_st_2d_pca['PC1'], df_st_2d_pca['PC2'], color='red')
+    # plt.scatter(df_st_2d_pca['PC1'], df_st_2d_pca['PC2'], color='red')
     plt.title('Scatter plot of PCA')
     plt.xlabel('PC1')
     plt.ylabel('PC2')
