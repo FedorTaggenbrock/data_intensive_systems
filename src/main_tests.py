@@ -21,9 +21,9 @@ def run_all_tests():
 
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
 
-    actual_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/10000_actual_routes', clustering_settings)
+    actual_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/10000_actual_routes.json', clustering_settings)
     clustering_settings["num_actual_routes"] = num_routes
-    standard_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/001_standard_routes', clustering_settings)
+    standard_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/001_standard_routes.json', clustering_settings)
     clustering_settings["num_standard_routes"] = num_routes
 
     print("Running run_clustering().")
