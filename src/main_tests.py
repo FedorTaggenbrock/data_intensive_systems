@@ -2,6 +2,8 @@ from pyspark.sql import SparkSession
 from parse_data import parse_json_data, encode_data
 from parse_data_2 import parse_json_data2, encode_data2
 from data_visualization import plot_routes, convert_pd_df_to_one_row
+from parse_data import parse_json_data, encode_data, get_data
+from data_visualization import plot_routes
 from clustering import run_clustering
 from os import getcwd
 import pandas as pd
@@ -15,17 +17,15 @@ import matplotlib.pyplot as plt
 def run_all_tests():
     clustering_settings = {
         'clustering_algorithm': 'kmodes',
-        'k_values': [1, 2],
+        'k_values': [10],
         'max_iterations': 5,
-        'debug_flag': True
+        'debug_flag': False
     }
 
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
 
-    actual_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/10000_actual_routes.json', clustering_settings)
+    actual_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json', clustering_settings)
     clustering_settings["num_actual_routes"] = num_routes
-    standard_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/001_standard_routes.json', clustering_settings)
-    clustering_settings["num_standard_routes"] = num_routes
 
     print("Running run_clustering().")
     results = run_clustering(
@@ -39,15 +39,6 @@ def run_all_tests():
     print("best settings are given by: \n", best_settings)
     return
 
-def get_data(spark, path, clustering_settings):
-    #Opletten dat bij het parsen de hoeveelheden van stad A-> stad B wel goed samengevoegd worden. Zie nu twee keer dezelfde from->to staan bij route 1 namelijk.
-    pd_df, num_routes = parse_json_data(json_path = path)
-
-    encoded_spark_df, product_list = encode_data(spark, pd_df, clustering_settings["debug_flag"])
-    encoded_spark_rdd = encoded_spark_df.rdd
-    if clustering_settings["debug_flag"]:
-        test_distance_function(encoded_spark_rdd)
-    return encoded_spark_rdd, num_routes
 
 def get_data_test():
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
@@ -133,5 +124,5 @@ def plot_test():
     plt.ylabel('PC2')
     plt.show()
 
-
+run_all_tests()
 

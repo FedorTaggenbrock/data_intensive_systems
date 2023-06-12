@@ -28,6 +28,7 @@ def route_distance(route1, route2):
     else:
         dist = 1
     return dist
+
 def test_distance_function(data):
     routes = data.collect()
     for i in range(len(routes)):
