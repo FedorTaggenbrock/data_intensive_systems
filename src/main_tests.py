@@ -18,7 +18,7 @@ def run_all_tests():
         'clustering_algorithm': 'kmodes',
         'k_values': [10],
         'max_iterations': 5,
-        'debug_flag': True
+        'debug_flag': False
     }
 
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
