@@ -4,6 +4,7 @@ from data_visualization import plot_routes, convert_pd_df_to_one_row
 from clustering import run_clustering
 from os import getcwd
 import pandas as pd
+from evaluate_clustering import evaluate_clustering, get_best_setting
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
@@ -13,34 +14,39 @@ import matplotlib.pyplot as plt
 def run_all_tests():
     clustering_settings = {
         'clustering_algorithm': 'kmodes',
-        'k_values': [2, 3],
+        'k_values': [1, 2],
         'max_iterations': 5,
         'debug_flag': True
     }
 
-    #main function which runs all other tests imported from different files
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
-    print("Initialized Spark.")
 
+    actual_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/10000_actual_routes.json', clustering_settings)
+    clustering_settings["num_actual_routes"] = num_routes
+    standard_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/001_standard_routes.json', clustering_settings)
+    clustering_settings["num_standard_routes"] = num_routes
+
+    print("Running run_clustering().")
+    results = run_clustering(
+        data=actual_routes_rdd,
+        clustering_settings=clustering_settings
+        )
+
+    print("Start evaluating clusters")
+    metrics = evaluate_clustering(actual_routes_rdd, results, clustering_settings)
+    best_settings = get_best_setting(metrics)
+    print("best settings are given by: \n", best_settings)
+    return
+
+def get_data(spark, path, clustering_settings):
     #Opletten dat bij het parsen de hoeveelheden van stad A-> stad B wel goed samengevoegd worden. Zie nu twee keer dezelfde from->to staan bij route 1 namelijk.
-    pd_df, num_routes = parse_json_data()
-    clustering_settings["num_routes"] = num_routes
+    pd_df, num_routes = parse_json_data(json_path = path)
 
     encoded_spark_df, product_list = encode_data(spark, pd_df, clustering_settings["debug_flag"])
     encoded_spark_rdd = encoded_spark_df.rdd
-
     if clustering_settings["debug_flag"]:
         test_distance_function(encoded_spark_rdd)
-
-    print("Running run_clustering().")
-    centroids = run_clustering(
-        data=encoded_spark_rdd,
-        clustering_settings=clustering_settings
-        )
-    print("The centroids are given by: ", centroids)
-
-    # print("Start evaluating clusters")
-    return
+    return encoded_spark_rdd, num_routes
 
 def plot_test():
     # Load data and create data frame

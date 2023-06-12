@@ -27,7 +27,7 @@ def evaluate_clustering(data: RDD, clustering_result: list[tuple[ list[float], d
 
     # Check which evaluation function to use
     if clustering_settings['clustering_algorithm'] == "kmodes":
-        evaluation_metrics = evaluate_kModes2(data=data, 
+        evaluation_metrics = evaluate_kModes(data=data,
                                              clustering_settings=clustering_settings,
                                              clustering_result=clustering_result,
                                              perfect_centroids=perfect_centroids)
@@ -36,12 +36,15 @@ def evaluate_clustering(data: RDD, clustering_result: list[tuple[ list[float], d
     else:
         raise NameError(f"Clustering setting not recognized.")
 
+    if clustering_settings["debug_flag"]:
+        print("The evaluation metrics are given by:", evaluation_metrics)
+
     # return data.map(lambda point: distance(point, min(centroids, key=lambda centroid: distance(point, centroid)))).sum()
     return evaluation_metrics
     
 
 
-def evaluate_kModes2(data: RDD, clustering_settings: dict, clustering_result: list[tuple[ list[float], dict[str, Any]]], 
+def evaluate_kModes(data: RDD, clustering_settings: dict, clustering_result: list[tuple[ list[float], dict[str, Any]]],
                     perfect_centroids: Union[None, tuple]):
     f"""
     Evaluate the clustering of the given data using the given centroids and provided distance function.
@@ -129,7 +132,7 @@ def evaluate_clustering_test2():
             [1,1,1,0,0],
             [1,1,0,0,0],
         ])
-    
+
     clustering_settings = {
         'clustering_algorithm': 'kmodes',
         'k_values': [2, 3],
@@ -216,7 +219,6 @@ def get_best_setting(metrics: list[dict]) -> dict:
                 # So, we're looking for a local MINIMUM in the second derivative.
                 elbow_point_index = second_derivative.index(min(second_derivative)) + 1
             """
-
     return best_settings_dict
 
     # Lower is better
