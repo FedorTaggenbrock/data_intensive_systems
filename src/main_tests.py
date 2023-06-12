@@ -115,8 +115,13 @@ def plot_test():
     # Convert back to DataFrame for easy handling
     df_2d_tsne = pd.DataFrame(df_2d_tsne, columns=["Dim1", "Dim2"])
 
+    # Also for the standard routes
+    df_st_2d_tsne = tsne.fit_transform(df_st_scaled)
+    df_st_2d_tsne = pd.DataFrame(df_st_2d_tsne, columns=["Dim1", "Dim2"])
+
     plt.figure(figsize=(16, 10))
-    plt.scatter(df_2d_tsne['PC1'], df_2d_tsne['PC2'])
+    # plt.scatter(df_2d_tsne['Dim1'], df_2d_tsne['Dim1'])
+    plt.scatter(df_st_2d_tsne['Dim1'], df_st_2d_tsne['Dim1'])
     plt.title('Scatter plot of t-SNE')
     plt.xlabel('PC1')
     plt.ylabel('PC2')
