@@ -1,5 +1,6 @@
 from pyspark.sql import SparkSession
 from parse_data import parse_json_data, encode_data
+from parse_data_2 import parse_json_data2, encode_data2
 from data_visualization import plot_routes, convert_pd_df_to_one_row
 from clustering import run_clustering
 from os import getcwd
@@ -48,12 +49,17 @@ def get_data(spark, path, clustering_settings):
         test_distance_function(encoded_spark_rdd)
     return encoded_spark_rdd, num_routes
 
+def get_data_test():
+    spark = SparkSession.builder.appName("Clustering").getOrCreate()
+    df = parse_json_data2()
+    encode_data2(spark, df)
+    
 def plot_test():
     # Load data and create data frame
-    pd_df, num_routes = parse_json_data('data_intensive_systems/data/10000_actual_routes.json')
+    pd_df, num_routes = parse_json_data('data_intensive_systems/data/data_12_06/100000_0.500_actual_routes.json')
     encoded_pd_df = convert_pd_df_to_one_row(pd_df)
 
-    pd_df_st, num_routes = parse_json_data('data_intensive_systems/data/10_0.25_standard_route.json')
+    pd_df_st, num_routes = parse_json_data('data_intensive_systems/data/data_12_06/10_standard_route.json')
     encoded_pd_df_st = convert_pd_df_to_one_row(pd_df_st)
 
     def flatten_dict(row):
