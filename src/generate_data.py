@@ -6,6 +6,7 @@ File which generates the dataset and save it in the folder called "data"
 
 import random
 import json
+import copy
 
 # 250 cities
 cities = ["city_0", "city_1", "city_2", "city_3", "city_4", "city_5", "city_6", "city_7", "city_8", "city_9", "city_10", "city_11", "city_12", "city_13", "city_14", "city_15", "city_16", "city_17", "city_18", "city_19", "city_20", "city_21", "city_22", "city_23", "city_24", "city_25", "city_26", "city_27", "city_28", "city_29", "city_30", "city_31", "city_32", "city_33", "city_34", "city_35", "city_36", "city_37", "city_38", "city_39", "city_40", "city_41", "city_42", "city_43", "city_44", "city_45", "city_46", "city_47", "city_48", "city_49", "city_50", "city_51", "city_52", "city_53", "city_54", "city_55", "city_56", "city_57", "city_58", "city_59", "city_60", "city_61", "city_62", "city_63", "city_64", "city_65", "city_66", "city_67", "city_68", "city_69", "city_70", "city_71", "city_72", "city_73", "city_74", "city_75", "city_76", "city_77", "city_78", "city_79", "city_80", "city_81", "city_82", "city_83", "city_84", "city_85", "city_86", "city_87", "city_88", "city_89", "city_90", "city_91", "city_92", "city_93", "city_94", "city_95", "city_96", "city_97", "city_98", "city_99", "city_100", "city_101", "city_102", "city_103", "city_104", "city_105", "city_106", "city_107", "city_108", "city_109", "city_110", "city_111", "city_112", "city_113", "city_114", "city_115", "city_116", "city_117", "city_118", "city_119", "city_120", "city_121", "city_122", "city_123", "city_124", "city_125", "city_126", "city_127", "city_128", "city_129", "city_130", "city_131", "city_132", "city_133", "city_134", "city_135", "city_136", "city_137", "city_138", "city_139", "city_140", "city_141", "city_142", "city_143", "city_144", "city_145", "city_146", "city_147", "city_148", "city_149", "city_150", "city_151", "city_152", "city_153", "city_154", "city_155", "city_156", "city_157", "city_158", "city_159", "city_160", "city_161", "city_162", "city_163", "city_164", "city_165", "city_166", "city_167", "city_168", "city_169", "city_170", "city_171", "city_172", "city_173", "city_174", "city_175", "city_176", "city_177", "city_178", "city_179", "city_180", "city_181", "city_182", "city_183", "city_184", "city_185", "city_186", "city_187", "city_188", "city_189", "city_190", "city_191", "city_192", "city_193", "city_194", "city_195", "city_196", "city_197", "city_198", "city_199", "city_200", "city_201", "city_202", "city_203", "city_204", "city_205", "city_206", "city_207", "city_208", "city_209", "city_210", "city_211", "city_212", "city_213", "city_214", "city_215", "city_216", "city_217", "city_218", "city_219", "city_220", "city_221", "city_222", "city_223", "city_224", "city_225", "city_226", "city_227", "city_228", "city_229", "city_230", "city_231", "city_232", "city_233", "city_234", "city_235", "city_236", "city_237", "city_238", "city_239", "city_240", "city_241", "city_242", "city_243", "city_244", "city_245", "city_246", "city_247", "city_248", "city_249"]
@@ -22,13 +23,11 @@ class Product:
     def __str__(self) -> str:
         return '"' + str(self.name) + '":' + str(self.count)
     
-    def permute(self, percentage: float):
+    def permute(self, verbose = False):
         """ This function permuts the amount of a product given some percentage """
-        r = random.random()
+        self.count = random.choice(self.range)
 
-        if (r <= percentage):
-            print("permuted")
-            self.count = random.choice(self.range)
+        # if verbose: print(f"[Product permutation]: {str(self)}")
     
 class Stop:
     def __init__(
@@ -48,26 +47,30 @@ class Stop:
 
     def __str__(self) -> str:
         s =  '{"from":"' + self.origin + '","to":"' + self.destination + '","merchandise":{'
+
+        if len(self.products) == 0:
+            x=33
+
         for p in self.products:
             s += str(p) + ","
-        return s[:-1] + "}},"
+    
+        if len(self.products) == 0: s += "}},"
+        else: s = s[:-1] + "}},"
+        
+        return s
 
-    def generate_products(self, 
-        products: range, 
-        count: range, 
-        product_list: list
-    ):
+    def generate_products(self, product_range):
         """ This function generates a list of products for a given Stop """
-        p = int(random.uniform(products.start, products.stop))
+        p = int(random.uniform(product_range.start, product_range.stop))
 
         while len(self.products) <= p:
-            c = int(random.uniform(count.start, count.stop))
-            i = random.choice(product_list)
+            c = int(random.uniform(self.product_amount_range.start, self.product_amount_range.stop))
+            i = random.choice(self.product_list)
 
             if i in self.products: 
                 continue
 
-            self.products.append( Product(i, c, count) )
+            self.products.append( Product(i, c, self.product_amount_range) )
 
     def product_exists(self, product_name: str) -> bool:
         """ returns true if 'product_name' already exists """
@@ -77,16 +80,16 @@ class Stop:
             
         return False
 
-    def permute(self, percentage):
+    def permute(self, verbose = False):
         """ 
             This function permutes a stop, this can be done in 3 ways 
-            1. P( add product     ) = percentage 
-            2. P( remove product  ) = percentage
-            3. P( permute product ) = percentage
+            1. P( add product     ) = 1/3 
+            2. P( remove product  ) = 1/3
+            3. P( permute product ) = 1/3
         """
         r = random.random()
 
-        if r >= percentage * 0 and r < percentage * 1:
+        if r >= 0 and r < 1/3:
             """ add an unique product to the productlist """
             unique = False
             while not unique:
@@ -95,25 +98,37 @@ class Stop:
                     unique = True
 
             amount = random.choice(self.product_amount_range)
+            product = Product(name, amount, self.product_amount_range)
 
-            self.products.append( Product(name, amount, self.product_amount_range) )
+            self.products.append( product )
 
-        if r >= percentage * 1 and r < percentage * 2:
+            # if verbose: print(f"[Stop permutation 1]: added {str(product)}")
+
+        if r >= 1/3 and r <  2/3:
             """ remove a random product in the list """
-            product = random.choice(self.products)
-            self.products.remove(product)
+            if len(self.products) > 2:
+                product = random.choice(self.products)
+                self.products.remove(product)
 
-        if r >= percentage * 2 and r < percentage * 3:
+            # if verbose: print(f"[Stop permutation 2]: removed {str(product)}")
+
+        if r >= 2/3 and r < 1:
             """ permute a random product in the list """
             product = random.choice(self.products)
-            product.permute(percentage)
+            product.permute(verbose)
+
+            # if verbose: print(f"[Stop permutation 3]: permuted {str(product)}")
 
 class Route:
     stops = []
 
-    def __init__(self, id):
+    def __init__(self, id, city_list: list, prodcut_list: list, product_count: range, product_range: range):
         self.id = id
         self.stops = []
+        self.city_list = city_list
+        self.product_list = prodcut_list
+        self.product_count = product_count  # amount of product
+        self.product_range = product_range  # amount per product
 
     def __str__(self) -> str:
         s = '{"id":' + str(self.id) + ', "route":['
@@ -121,40 +136,101 @@ class Route:
             s += str(x)
         return s[:-1] + ']}'
     
-    def generate_stops(self, 
-            city_count: range, 
-            products: range, 
-            product_count: range, 
-            city_list: list, 
-            product_list: list
-        ):
+    def generate_stops(self, city_count: range):
         """ This function generates a list of Stops in for a Standard Route """
 
         s = random.choice(city_count)
 
         while (len(self.stops) <= s):
-            if (len(self.stops) == 0):  stop_1 = random.choice(city_list)
+            if (len(self.stops) == 0):  stop_1 = random.choice(self.city_list)
             else:                       stop_1 = self.stops[len(self.stops) - 1].destination
-            stop_2 = random.choice(city_list)
+            stop_2 = random.choice(self.city_list)
 
             if (stop_1 == stop_2):
                 continue
             
 
-            stop = Stop(stop_1, stop_2, city_list, product_list, product_count)
-            stop.generate_products(products, product_count, product_list)
+            stop = Stop(stop_1, stop_2, self.city_list, self.product_list, self.product_count)
+            stop.generate_products(self.product_range)
 
             self.stops.append( stop )
 
-    def permute(self, percentage):
-        pass
+    def permute(self, percentage, verbose = False):
+        """ 
+            This function permutes a route, this can be done in 3 ways 
+            1. P( add stop     ) = percentage 
+            2. P( remove stop  ) = percentage
+            3. P( permute stop ) = percentage
+        """
+        r = random.random() * 3
+
+        if r >= percentage * 0 and r < percentage * 1:
+            """ add a stop to the stops list """
+            # random position to insert
+            idx = self.stops.index(random.choice(self.stops))
+
+            # only performe linked-list add operation if not start or end
+            if idx != 0 and idx != len(self.stops) - 1:
+                # idx = between (start, end)
+                # [a,b], [b,c] + [x] => [a,b], [b,x], [x,c]
+                prev_stop = self.stops[idx - 1]
+                next_stop = self.stops[idx + 1]
+                new_stop  = random.choice(self.city_list)
+
+                stop = Stop(prev_stop.destination, new_stop, self.city_list, self.product_list, self.product_count)
+                stop.generate_products(self.product_range)
+                next_stop.origin = stop.destination
+
+                if verbose: print(f"[Route permutation 1]: added {str(stop)} at {idx}, previous:{prev_stop}, next:{next_stop}")
+
+            elif idx == 0:
+                # idx = start
+                next_stop = self.stops[0]
+                stop = Stop(random.choice(self.city_list), next_stop.origin, self.city_list, self.product_list, self.product_count )
+                self.stops.insert(0, stop)
+
+                if verbose: print(f"[Route permutation 1]: added {str(stop)} at {idx}, next {next_stop}")
+
+            else:
+                # idx = end
+                prev_stop = self.stops[len(self.stops) - 1]
+                stop = Stop(prev_stop.destination, random.choice(self.city_list), self.city_list, self.product_list, self.product_count)
+                self.stops.append(stop)
+
+                if verbose: print(f"[Route permutation 1]: added {str(stop)} at {idx}, previous {prev_stop}")
+            
+        if r >= percentage * 1 and r < percentage * 2:
+            """ remove a random stop in the list """
+            stop = random.choice(self.stops)
+            idx  = self.stops.index(stop)
+
+            # only performe linked-list remove operation if not start or end
+            if idx != 0 and idx != len(self.stops) - 1:
+                # [a,b], [b,c], [c,d] => [a,c], [c,d]
+                prev_stop = self.stops[idx - 1]
+                next_stop = self.stops[idx + 1]
+                prev_stop.destination = next_stop.origin
+            
+            # remove the stop from the list
+            self.stops.remove(stop)
+
+            if verbose: print(f"[Route permutation 2]: removed {str(stop)} at {idx}")
+
+        if r >= percentage * 2 and r < percentage * 3:
+            """ permute a random stop in the list """
+            stop = random.choice(self.stops)
+
+            if verbose: print(f"[Route permutation 2]: permuted {str(stop)}")
+
+            stop.permute(percentage)
+
 
     @staticmethod
     def generate_routes(
             file_name: str, 
             stop_count: int, 
             city_count: range, 
-            products: range, 
+            product_range: range, 
             product_count: range, 
             city_list: list, 
             product_list: list
@@ -164,32 +240,56 @@ class Route:
         routes = []
 
         for i in range(stop_count): 
-            r = Route(i)
-            r.generate_stops(city_count, products, product_count, city_list, product_list)
+            r = Route(i, city_list, product_list, product_count, product_range)
+            r.generate_stops(city_count)
             routes.append( r )
 
         return routes
     
     @staticmethod
-    def routes_json(routes) -> list:
+    def routes_json(routes) -> str:
         s = "["
         for r in routes:
             s += (str(r) + ",")
         s = s[:-1] + ']'
-        return json.loads(s)
+        return s
+    
+    def pretty_print(self):
+        print(json.dumps(json.loads(str(self)), indent=1))
+    
 
 
 x = Route.generate_routes(
     "test",
     1,
     city_count=range(5, 10), 
-    products=range(2, 5), 
+    product_range=range(2, 5), 
     product_count=range(5, 20),
     city_list=cities, 
     product_list=products, 
 )
 
-for r in x:
-    r.permute(0.15)
+route    = x[0]
+permuted = []
 
-print(Route.routes_json(x))
+n = 10000
+
+c = 0
+for i in range(n):
+    route_ = copy.deepcopy(route)
+    
+    route_.permute(0.25)
+    permuted.append(route_)
+
+    if (100/n*i) % 10 == 1:
+        c+=1
+        print(f"{c*10}%")
+
+
+f = open("001_standard_route.json", "w")
+f.write(str(route))
+f.close()
+
+f = open(f"{n}_actual_routes.json", "w")
+f.write(Route.routes_json(permuted))
+f.close()

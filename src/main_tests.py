@@ -1,23 +1,21 @@
 from pyspark.sql import SparkSession
 from parse_data import parse_json_data, encode_data
 from data_visualization import plot_routes
-from distance_function import route_distance
 from clustering import run_clustering
 from os import getcwd
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
+from distance_functions import test_distance_function
 import matplotlib.pyplot as plt
 
-print(getcwd())
 def run_all_tests():
     clustering_settings = {
         'clustering_algorithm': 'kmodes',
         'k_values': [2, 3],
-        'max_iterations': 2,
-        'debug_flag': True,
-        'distance_func' : route_distance
+        'max_iterations': 5,
+        'debug_flag': True
     }
 
     #main function which runs all other tests imported from different files
@@ -32,15 +30,12 @@ def run_all_tests():
     encoded_spark_rdd = encoded_spark_df.rdd
 
     if clustering_settings["debug_flag"]:
-        two_routes = encoded_spark_rdd.take(2)
-        print("The distance between route 0 and route 1 is given by:")
-        print(route_distance(two_routes[0], two_routes[1]))
+        test_distance_function(encoded_spark_rdd)
 
     print("Running run_clustering().")
     centroids = run_clustering(
-        spark_instance=spark,
-        clustering_settings=clustering_settings,
         data=encoded_spark_rdd,
+        clustering_settings=clustering_settings
         )
     print("The centroids are given by: ", centroids)
 
