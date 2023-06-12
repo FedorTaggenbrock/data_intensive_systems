@@ -28,9 +28,12 @@ def run_clustering(clustering_settings: dict, data: RDD) -> list[tuple]:
 
             # Store the settings, model, and metrics
             results.append((predicted_centroids, {'k': current_k}))
+            if clustering_settings["debug_flag"]:
+                print("The centroids for  k = ", current_k, " are given by: ", predicted_centroids)
     else:
         print("Clustering algorithm setting not recognized in run_and_tune().")
-
+    if clustering_settings["debug_flag"]:
+        print("The output results for multiple k is given by:", results)
     return results
 
 
