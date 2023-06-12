@@ -23,7 +23,7 @@ def run_all_tests():
 
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
 
-    actual_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/1000_actual_routes.json', clustering_settings)
+    actual_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json', clustering_settings)
     clustering_settings["num_actual_routes"] = num_routes
 
     print("Running run_clustering().")
@@ -118,5 +118,5 @@ def plot_test():
     plt.ylabel('PC2')
     plt.show()
 
-
+run_all_tests()
 
