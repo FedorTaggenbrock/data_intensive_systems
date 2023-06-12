@@ -77,6 +77,7 @@ def plot_test():
     # df_st_flattened = encoded_pd_df_st.apply(flatten_dict, axis=1)
     # df_st_flattened = df_st_flattened.fillna(0)
     # df_st_scaled = scaler.fit_transform(df_st_flattened)
+
     # Perform PCA ->
     # PCA (Principal Component Analysis) is a technique used for dimensionality
     # reduction that identifies the axes in the data space along which the data
@@ -87,7 +88,7 @@ def plot_test():
 
     # Convert back to DataFrame for easy handling
     df_2d_pca = pd.DataFrame(df_2d_pca, columns=["PC1", "PC2"])
-    # print(df_2d_pca.to_string())
+    print(df_2d_pca.to_string())
     # df_st_2d_pca = pca.fit_transform(df_st_scaled)
     # df_st_2d_pca = pd.DataFrame(df_st_2d_pca, columns=["PC1", "PC2"])
 
