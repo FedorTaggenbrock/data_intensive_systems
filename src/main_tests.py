@@ -16,17 +16,15 @@ import matplotlib.pyplot as plt
 def run_all_tests():
     clustering_settings = {
         'clustering_algorithm': 'kmodes',
-        'k_values': [1, 2],
+        'k_values': [10],
         'max_iterations': 5,
         'debug_flag': True
     }
 
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
 
-    actual_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/10000_actual_routes.json', clustering_settings)
+    actual_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/1000_actual_routes.json', clustering_settings)
     clustering_settings["num_actual_routes"] = num_routes
-    standard_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/001_standard_route.json', clustering_settings)
-    clustering_settings["num_standard_routes"] = num_routes
 
     print("Running run_clustering().")
     results = run_clustering(
@@ -39,7 +37,6 @@ def run_all_tests():
     best_settings = get_best_setting(metrics)
     print("best settings are given by: \n", best_settings)
     return
-
 
 
 def plot_test():
