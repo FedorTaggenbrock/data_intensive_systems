@@ -8,6 +8,14 @@ from distance_functions import route_distance
 from clustering import run_clustering
 import matplotlib.pyplot as plt
 
+def convert_pd_df_to_one_row(pd_df):
+    # Create spark session
+    spark = SparkSession.builder.appName("Clustering").getOrCreate()
+    # Encode each route as one row using spark
+    encoded_spark_df, product_list = encode_data(spark, pd_df, False)
+    # Convert back to pandas for processing
+    encoded_pd_df = encoded_spark_df.toPandas()
+    return encoded_pd_df
 
 def plot_routes(data:pd.DataFrame):
     le = LabelEncoder()

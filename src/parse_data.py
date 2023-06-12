@@ -32,7 +32,7 @@ def parse_json_data(json_path='data_intensive_systems/data/ex_example_route.json
 
             # Add a dictionary to df_list representing a row in the future df
             df_list.append(merchandise_dict)
-    
+
     # Finally, create df from the list. Fill NaNs with 0. Needed because if the last datapoint
     # contains an unseen merchandise, that column for all the previous routes will be filled with NaN.
     df = pd.DataFrame(df_list)
@@ -46,7 +46,7 @@ def parse_json_data(json_path='data_intensive_systems/data/ex_example_route.json
 def encode_data(spark: SparkSession, df: pd.DataFrame, debug_flag =False):
     """
     Encode data to be used for clustering. One-hot encode the cities.
-    
+
     Args:
     - df: pandas DataFrame containing the data to be encoded
     Returns:

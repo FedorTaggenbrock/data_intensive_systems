@@ -1,9 +1,13 @@
 from pyspark.sql import SparkSession
 from parse_data import parse_json_data, encode_data
+from parse_data_2 import parse_json_data2, encode_data2
+from data_visualization import plot_routes, convert_pd_df_to_one_row
+from parse_data import parse_json_data, encode_data, get_data
 from data_visualization import plot_routes
 from clustering import run_clustering
 from os import getcwd
 import pandas as pd
+from evaluate_clustering import evaluate_clustering, get_best_setting
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
@@ -13,44 +17,41 @@ import matplotlib.pyplot as plt
 def run_all_tests():
     clustering_settings = {
         'clustering_algorithm': 'kmodes',
-        'k_values': [2, 3],
+        'k_values': [10],
         'max_iterations': 5,
-        'debug_flag': True
+        'debug_flag': False
     }
 
-    #main function which runs all other tests imported from different files
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
-    print("Initialized Spark.")
 
-    #Opletten dat bij het parsen de hoeveelheden van stad A-> stad B wel goed samengevoegd worden. Zie nu twee keer dezelfde from->to staan bij route 1 namelijk.
-    pd_df, num_routes = parse_json_data()
-    clustering_settings["num_routes"] = num_routes
-
-    encoded_spark_df, product_list = encode_data(spark, pd_df, clustering_settings["debug_flag"])
-    encoded_spark_rdd = encoded_spark_df.rdd
-
-    if clustering_settings["debug_flag"]:
-        test_distance_function(encoded_spark_rdd)
+    actual_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json', clustering_settings)
+    clustering_settings["num_actual_routes"] = num_routes
 
     print("Running run_clustering().")
-    centroids = run_clustering(
-        data=encoded_spark_rdd,
+    results = run_clustering(
+        data=actual_routes_rdd,
         clustering_settings=clustering_settings
         )
-    print("The centroids are given by: ", centroids)
 
-    # print("Start evaluating clusters")
+    print("Start evaluating clusters")
+    metrics = evaluate_clustering(actual_routes_rdd, results, clustering_settings)
+    best_settings = get_best_setting(metrics)
+    print("best settings are given by: \n", best_settings)
     return
 
+
+def get_data_test():
+    spark = SparkSession.builder.appName("Clustering").getOrCreate()
+    df = parse_json_data2()
+    encode_data2(spark, df)
+    
 def plot_test():
     # Load data and create data frame
-    pd_df, num_routes = parse_json_data()
-    # Create spark session
-    spark = SparkSession.builder.appName("Clustering").getOrCreate()
-    # Encode each route as one row using spark
-    encoded_spark_df, product_list = encode_data(spark, pd_df, False)
-    # Convert back to pandas for processing
-    encoded_pd_df = encoded_spark_df.toPandas()
+    pd_df, num_routes = parse_json_data('data_intensive_systems/data/data_12_06/100000_0.500_actual_routes.json')
+    encoded_pd_df = convert_pd_df_to_one_row(pd_df)
+
+    pd_df_st, num_routes = parse_json_data('data_intensive_systems/data/data_12_06/10_standard_route.json')
+    encoded_pd_df_st = convert_pd_df_to_one_row(pd_df_st)
 
     def flatten_dict(row):
         flat_dict = {}
@@ -68,6 +69,11 @@ def plot_test():
     # Perform dimensionality reduction by first scaling
     scaler = StandardScaler()
     df_scaled = scaler.fit_transform(df_flattened)
+    print(df_scaled.shape)
+    # Flatten and scale the standard route
+    df_st_flattened = encoded_pd_df_st.apply(flatten_dict, axis=1)
+    df_st_flattened = df_st_flattened.fillna(0)
+    df_st_scaled = scaler.fit_transform(df_st_flattened)
 
     # Perform PCA ->
     # PCA (Principal Component Analysis) is a technique used for dimensionality
@@ -75,14 +81,19 @@ def plot_test():
     # varies the most, and uses these axes to reorient the data,
     # thereby preserving the maximum amount of variation in the data.
     pca = PCA(n_components=2)
-    df_2d_pca = pca.fit_transform(df_scaled)
+    # df_2d_pca = pca.fit_transform(df_scaled)
 
     # Convert back to DataFrame for easy handling
-    df_2d_pca = pd.DataFrame(df_2d_pca, columns=["PC1", "PC2"])
-    print(df_2d_pca.to_string())
+    # df_2d_pca = pd.DataFrame(df_2d_pca, columns=["PC1", "PC2"])
+    # print(df_2d_pca.to_string())
+    # Also for the standard routes
+    df_st_2d_pca = pca.fit_transform(df_st_scaled)
+    df_st_2d_pca = pd.DataFrame(df_st_2d_pca, columns=["PC1", "PC2"])
+
 
     plt.figure(figsize=(16, 10))
-    plt.scatter(df_2d_pca['PC1'], df_2d_pca['PC2'])
+    # plt.scatter(df_2d_pca['PC1'], df_2d_pca['PC2'], color='blue')
+    plt.scatter(df_st_2d_pca['PC1'], df_st_2d_pca['PC2'], color='red')
     plt.title('Scatter plot of PCA')
     plt.xlabel('PC1')
     plt.ylabel('PC2')
@@ -95,18 +106,23 @@ def plot_test():
     # meaning that points which are close to each other in the
     # high-dimensional space remain close to each other in the
     # low-dimensional representation.
-    tsne = TSNE(n_components=2)
-    df_2d_tsne = tsne.fit_transform(df_scaled)
+    tsne = TSNE(n_components=2, perplexity=3)
+    # df_2d_tsne = tsne.fit_transform(df_scaled)
 
     # Convert back to DataFrame for easy handling
-    df_2d_tsne = pd.DataFrame(df_2d_tsne, columns=["Dim1", "Dim2"])
+    # df_2d_tsne = pd.DataFrame(df_2d_tsne, columns=["Dim1", "Dim2"])
+
+    # Also for the standard routes
+    df_st_2d_tsne = tsne.fit_transform(df_st_scaled)
+    df_st_2d_tsne = pd.DataFrame(df_st_2d_tsne, columns=["Dim1", "Dim2"])
 
     plt.figure(figsize=(16, 10))
-    plt.scatter(df_2d_tsne['PC1'], df_2d_tsne['PC2'])
+    # plt.scatter(df_2d_tsne['Dim1'], df_2d_tsne['Dim1'])
+    plt.scatter(df_st_2d_tsne['Dim1'], df_st_2d_tsne['Dim1'])
     plt.title('Scatter plot of t-SNE')
     plt.xlabel('PC1')
     plt.ylabel('PC2')
     plt.show()
 
-
+run_all_tests()
 
