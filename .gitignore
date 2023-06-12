@@ -9,3 +9,6 @@ notebooks/*.py
 # Cached files / notebook metadata
 src/__pycache__/*.pyc
 src/__pycache__/*
+
+# .json files
+*.json
