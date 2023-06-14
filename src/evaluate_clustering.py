@@ -93,12 +93,18 @@ def evaluate_kModes(data: RDD, clustering_settings: dict, clustering_result: lis
 
         if perfect_centroids is not None:
             # Calculate deviation of centroids from perfect centroids. First, calculate for each centroid which the distance to each perfect centroid.
+            distances_to_perfect_centroids = np.array([  [distance_function(centroid, perfect_centroid) for perfect_centroid in perfect_centroids]  for centroid in centroids])
             
             # And then, determine which is closest.
+            closest_perfect_centroids_index = np.argmin(distances_to_perfect_centroids, axis=1)
+            closest_perfect_centroids = np.array([perfect_centroids[i] for i in closest_perfect_centroids_index])
 
             # Then, calculate the average distance between each centroid and its closest perfect centroid
+            centroid_to_closest_perfect_centroid_distance = np.array([distance_function(centroid, closest_perfect_centroid) for centroid, closest_perfect_centroid in zip(centroids, closest_perfect_centroids)]) 
+            average_centroid_to_closest_perfect_centroid_distance = np.mean(centroid_to_closest_perfect_centroid_distance)
 
-            average_centroid_deviation = None
+            # Store the result
+            average_centroid_deviation = average_centroid_to_closest_perfect_centroid_distance
         else:
             average_centroid_deviation = None
 
@@ -141,10 +147,11 @@ def evaluate_clustering_test2():
         'debug_flag': False,
     }
 
-    perfect_centroids = [[1, 1, 1, 1, 0], [0, 0, 1, 1, 0]]
+    perfect_centroids = [[1, 1, 1, 1, 0], [0, 0, 1, 1, 0], [1, 0, 0, 1, 0]]
     dummy_result = [
         ([[1, 0, 0, 1, 0], [1, 1, 1, 1, 0]], {'k': 2}),
-        ([[0, 0, 1, 0, 1], [1, 1, 1, 1, 0], [1, 0, 0, 1, 0]], {'k': 3})
+        ([[0, 0, 1, 0, 1], [1, 1, 1, 1, 0], [1, 0, 0, 1, 0]], {'k': 3}),
+        ([[0, 0, 1, 0, 1], [1, 1, 1, 1, 0], [1, 0, 0, 1, 0], [1,1,0,1,0]], {'k': 4})
     ]
 
     metrics = evaluate_clustering(
@@ -182,20 +189,25 @@ def get_best_setting(metrics: list[dict]) -> dict:
             # Get just the scores for this metric
             scores = [metric[metric_name] for metric in sorted_metrics]
 
-            # Approximate first derivative
-            diff_1 = np.diff(scores)
-
-            # Approximate second derivative. For metrics that should be minimized, like within cluster distance, we look for the elbow where 
-            # the decrease starts to slow down, so we compute the second derivative and find, where it is maximum.
-            # For metrics that should be maximized, like silhouette score, we look for the elbow where the increase starts to slow down,
-            # so we compute the second derivative and find where it is minimum.
-            if metric_name in higher_better_metrics:
-                diff_2 = np.diff(diff_1)
+            if len(scores)<=2:
+                # We can't calculate the second derivative then, so just take the first setting.
+                elbow_point_index = 0
             else:
-                diff_2 = -np.diff(diff_1)
-        
-            elbow_point_index = np.argmax(diff_2) + 2 # Need to add 2, because diff starts with: list[1]-list[0], so the first element is "lost."
+
+                # Approximate first derivative
+                diff_1 = np.diff(scores)
+
+                # Approximate second derivative. For metrics that should be minimized, like within cluster distance, we look for the elbow where 
+                # the decrease starts to slow down, so we compute the second derivative and find, where it is maximum.
+                # For metrics that should be maximized, like silhouette score, we look for the elbow where the increase starts to slow down,
+                # so we compute the second derivative and find where it is minimum.
+                if metric_name in higher_better_metrics:
+                    diff_2 = np.diff(diff_1)
+                else:
+                    diff_2 = -np.diff(diff_1)
             
+                elbow_point_index = np.argmax(diff_2) + 2 # Need to add 2, because diff starts with: list[1]-list[0], so the first element is "lost."
+                
             # Store the best setting for this metric
             best_setting = sorted_metrics[elbow_point_index]['settings']
             best_settings_dict[metric_name] = best_setting
@@ -246,22 +258,31 @@ def get_best_setting(metrics: list[dict]) -> dict:
 
 
 if __name__ == "__main__":
-    # res = evaluate_clustering_test2()
+
+    res = evaluate_clustering_test2()
+    print('\n', res, '\n')
 
     dummy_res = [
         {'settings':{'k': 2},
          'average_within_cluster_distance': 0.5166666666666666,
          'average_within_cluster_variance': 0.0002551118827160493,
-         'average_centroid_deviation': None,
+         'average_centroid_deviation': 0.25,
          'silhouette_score': 0.30505357142857137},
         {'settings':{'k': 3},
          'average_within_cluster_distance':0.5944444444444444,
          'average_within_cluster_variance':0.00020747599451303157,
-         'average_centroid_deviation':None,
-         'silhouette_score':0.25358420593368236} ]
-
+         'average_centroid_deviation':0.38888888888888884,
+         'silhouette_score':0.25358420593368236},
+        {'settings': {'k': 4},
+         'average_within_cluster_distance': 0.5183333333333333,
+         'average_within_cluster_variance': 0.00012096749999999996,
+         'average_centroid_deviation': 0.22916666666666666,
+         'silhouette_score': 0.0993585317061738}         
+         ]
+    
     best_setting = get_best_setting(dummy_res)
     print(best_setting)
+
     print('done')
 
  
