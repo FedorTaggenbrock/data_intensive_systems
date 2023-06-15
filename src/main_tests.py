@@ -15,9 +15,10 @@ from parse_data import parse_json_data, encode_data, get_data
 from data_visualization import plot_routes
 from clustering import run_clustering
 
-from parse_data import parse_json_data, encode_data
-from parse_data_2 import parse_json_data2, encode_data2
 from parse_data_3 import get_data_3
+# OLD, DON'T USE
+# from parse_data import parse_json_data, encode_data #
+# from parse_data_2 import parse_json_data2, encode_data2
 
 def run_all_tests():
     clustering_settings = {
