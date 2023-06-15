@@ -8,6 +8,9 @@ from functools import reduce
 import numpy as np
 import math
 
+import parse_data_3
+import evaluate_clustering
+
 
 def run_clustering(clustering_settings: dict, data: RDD) -> list[tuple]:
     '''Define variables to store results.'''
@@ -98,7 +101,7 @@ def kModes(data: RDD, k: int, clustering_settings):
                 max_score = row_scores[it]
         return best_row
 
-    def run_all_tests():
+def run_all_tests():
     clustering_settings = {
         'clustering_algorithm': 'kmodes',
         'k_values': [10],
@@ -109,7 +112,7 @@ def kModes(data: RDD, k: int, clustering_settings):
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
 
     # actual_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json', clustering_settings)
-    actual_routes_rdd, num_routes = get_data_3(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json', clustering_settings)
+    actual_routes_rdd, num_routes = parse_data_3.get_data_3(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json', clustering_settings)
 
     clustering_settings["num_actual_routes"] = num_routes
 
@@ -122,9 +125,10 @@ def kModes(data: RDD, k: int, clustering_settings):
     
 
     print("Start evaluating clusters")
-    metrics = evaluate_clustering(actual_routes_rdd, results, clustering_settings)
-    best_settings = get_best_setting(metrics)
+    metrics = evaluate_clustering.evaluate_clustering(actual_routes_rdd, results, clustering_settings)
+    best_settings = evaluate_clustering.get_best_setting(metrics)
     print("best settings are given by: \n", best_settings)
+    
     return
 	
 def run_clustering(clustering_settings: dict, data: RDD) -> list[tuple]:
