@@ -56,7 +56,7 @@ def get_data_3(spark, path, clustering_settings):
     spark_df.show()
   clustering_settings["Products"] = products
   clustering_settings["num_routes"] = num_routes
-  return spark_df.rdd
+  return spark_df.rdd, num_routes
 
 
 
