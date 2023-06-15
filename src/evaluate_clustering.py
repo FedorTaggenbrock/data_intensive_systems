@@ -2,6 +2,7 @@
 import numpy as np
 import scipy.spatial.distance
 from sklearn.metrics import silhouette_score, davies_bouldin_score, calinski_harabasz_score
+import pickle
 
 # Spark etc
 from pyspark import RDD
@@ -9,6 +10,9 @@ from pyspark.sql import SparkSession
 
 # Typing
 from typing import Any, Callable, Union
+
+# Own module imports (testing)
+from parse_data_3 import get_data_3
 
 def evaluate_clustering(data: RDD, clustering_result: list[tuple[ list[float], dict[str, Any]]], clustering_settings: dict, perfect_centroids = None) -> list[dict]:
     """
@@ -121,8 +125,31 @@ def evaluate_kModes(data: RDD, clustering_settings: dict, clustering_result: lis
 
         results.append(metrics)
 
-    return results
+    return 
 
+
+
+def evaluate_clustering_test3():
+    spark = SparkSession.builder.appName("Clustering").getOrCreate()
+
+    def load_results(path='data/serialized_results_for_debugging/results.pkl'):
+        with open(path, 'rb') as f:
+            return pickle.load(f)
+    
+    pickled_clustering_result = load_results()
+
+    actual_routes_rdd, num_routes = get_data_3(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json')
+
+    metrics = evaluate_clustering(
+        data=data,
+        clustering_result=pickled_clustering_result,
+        clustering_settings=clustering_settings,
+        perfect_centroids=perfect_centroids,
+    )
+
+
+
+    return
 
 def evaluate_clustering_test2():
 
