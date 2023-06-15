@@ -142,5 +142,6 @@ def plot_test():
     plt.ylabel('PC2')
     plt.show()
 
-run_all_tests()
+if __name__ == "__main__":
+    run_all_tests()
 
