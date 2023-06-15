@@ -1,10 +1,4 @@
 from pyspark.sql import SparkSession
-from parse_data import parse_json_data, encode_data
-from parse_data_2 import parse_json_data2, encode_data2
-from data_visualization import plot_routes, convert_pd_df_to_one_row
-from parse_data import parse_json_data, encode_data, get_data
-from data_visualization import plot_routes
-from clustering import run_clustering
 from os import getcwd
 import pandas as pd
 from evaluate_clustering import evaluate_clustering, get_best_setting
@@ -13,6 +7,17 @@ from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 from distance_functions import test_distance_function
 import matplotlib.pyplot as plt
+import os
+import pickle
+
+from data_visualization import plot_routes, convert_pd_df_to_one_row
+from parse_data import parse_json_data, encode_data, get_data
+from data_visualization import plot_routes
+from clustering import run_clustering
+
+from parse_data import parse_json_data, encode_data
+from parse_data_2 import parse_json_data2, encode_data2
+from parse_data_3 import get_data_3
 
 def run_all_tests():
     clustering_settings = {
@@ -24,7 +29,9 @@ def run_all_tests():
 
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
 
-    actual_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json', clustering_settings)
+    # actual_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json', clustering_settings)
+    actual_routes_rdd, num_routes = get_data_3(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json', clustering_settings)
+
     clustering_settings["num_actual_routes"] = num_routes
 
     print("Running run_clustering().")
@@ -32,6 +39,9 @@ def run_all_tests():
         data=actual_routes_rdd,
         clustering_settings=clustering_settings
         )
+    # Save the results (optional, Abe)
+    save_results_test(results, clustering_settings)
+    
 
     print("Start evaluating clusters")
     metrics = evaluate_clustering(actual_routes_rdd, results, clustering_settings)
@@ -44,7 +54,13 @@ def get_data_test():
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
     df = parse_json_data2()
     encode_data2(spark, df)
-    
+
+def save_results_test(results, clustering_settings):
+    os.makedirs('data/serialized_results_for_debugging/', exist_ok=True)
+    name = f"algo={clustering_settings['clustering_algorithm']}_kvalues={clustering_settings['k_values'].join('-')}_max_iter={clustering_settings['max_iterations'].join('-')})"
+    with open('data/serialized_results_for_debugging/results__{}.pkl'.format(name), 'wb') as f:
+        pickle.dump(results, f)
+        
 def plot_test():
     # Load data and create data frame
     pd_df, num_routes = parse_json_data('data_intensive_systems/data/data_12_06/100000_0.500_actual_routes.json')
