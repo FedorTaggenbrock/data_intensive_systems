@@ -31,6 +31,7 @@ def run_all_tests():
 
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
 
+    print("Loading data")
     # actual_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json', clustering_settings)
     actual_routes_rdd, num_routes = get_data_3(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json', clustering_settings)
 
