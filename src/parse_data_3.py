@@ -31,7 +31,8 @@ def parse_json_data_3(json_path, debug_flag=False):
     for i,v in enumerate(products):
       product_mapping[v] = i
 
-    print("product_mapping: ", product_mapping)
+    if debug_flag:
+       print("product_mapping: ", product_mapping)
 
     df_rows = []
     with open(json_path, 'rb') as f:
@@ -56,6 +57,7 @@ def get_data_3(spark, path, clustering_settings):
     spark_df.show()
   clustering_settings["Products"] = products
   clustering_settings["num_routes"] = num_routes
+
   return spark_df.rdd, num_routes
 
 

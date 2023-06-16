@@ -33,7 +33,7 @@ def run_all_tests():
 
     print("Loading data")
     # actual_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json', clustering_settings)
-    actual_routes_rdd, num_routes = get_data_3(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json', clustering_settings)
+    actual_routes_rdd, num_routes = get_data_3(spark, 'data/1000_0.25_actual_routes.json', clustering_settings)
 
     clustering_settings["num_actual_routes"] = num_routes
 
