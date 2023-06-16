@@ -1,5 +1,4 @@
 from pyspark.sql import SparkSession
-from os import getcwd
 import pandas as pd
 from evaluate_clustering import evaluate_clustering, get_best_setting
 from sklearn.preprocessing import StandardScaler
@@ -8,6 +7,7 @@ from sklearn.manifold import TSNE
 from distance_functions import test_distance_function
 import matplotlib.pyplot as plt
 import os
+import sys
 import pickle
 
 from data_visualization import plot_routes, convert_pd_df_to_one_row
@@ -16,7 +16,7 @@ from data_visualization import plot_routes
 from clustering import run_clustering
 
 from parse_data_3 import get_data_3
-# OLD, DON'T USE
+# OLD
 # from parse_data import parse_json_data, encode_data, get_data
 # from parse_data import parse_json_data, encode_data #
 # from parse_data_2 import parse_json_data2, encode_data2
@@ -33,7 +33,16 @@ def run_all_tests():
 
     print("Loading data")
     # actual_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json', clustering_settings)
-    actual_routes_rdd, num_routes = get_data_3(spark, 'data/1000_0.25_actual_routes.json', clustering_settings)
+    _ON_COLAB = 'google.colab' in sys.modules
+    try:
+        if _ON_COLAB:
+            data_path = os.getcwd() + '/data_intensive_systems/data/1000_0.25_actual_routes.json'
+        else:
+            data_path = os.getcwd() + '/data/1000_0.25_actual_routes.json'
+        actual_routes_rdd, num_routes = get_data_3(spark, 'data/1000_0.25_actual_routes.json', clustering_settings)
+    except Exception as e:
+        print('Data path was not found.\n\n', e)
+
 
     clustering_settings["num_actual_routes"] = num_routes
 
