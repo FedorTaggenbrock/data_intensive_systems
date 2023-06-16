@@ -346,7 +346,7 @@ def save_results_test(results, clustering_settings):
     os.makedirs('data/serialized_results_for_debugging/', exist_ok=True)
     # Make the name of the file
     algo = clustering_settings['clustering_algorithm']
-    kvals = clustering_settings['k_values'].join('-')
+    kvals = '[' + '-'.join( [str(kval) for kval in clustering_settings['k_values']] ) + ']'
     iters = clustering_settings['max_iterations']
     name = f"algo={algo}_kvalues={kvals}_max_iter={iters})"
 
