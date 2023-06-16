@@ -46,7 +46,6 @@ def run_all_tests():
     except Exception as e:
         print('Data path was not found.\n\n', e)
 
-
     clustering_settings["num_actual_routes"] = num_routes
 
     print("Running run_clustering().")
