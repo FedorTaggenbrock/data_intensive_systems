@@ -302,7 +302,7 @@ def __run_all_tests():
         'clustering_algorithm': 'kmodes',
         'k_values': [3],
         'max_iterations': 4,
-        'debug_flag': True
+        'debug_flag': True,
     }
 
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
@@ -344,8 +344,12 @@ def __run_all_tests():
 
 def save_results_test(results, clustering_settings):
     os.makedirs('data/serialized_results_for_debugging/', exist_ok=True)
-    name = f"algo={clustering_settings['clustering_algorithm']}_kvalues={clustering_settings['k_values'].join('-')}_max_iter={clustering_settings['max_iterations'].join('-')})"
-    
+    # Make the name of the file
+    algo = clustering_settings['clustering_algorithm']
+    kvals = clustering_settings['k_values'].join('-')
+    iters = clustering_settings['max_iterations']
+    name = f"algo={algo}_kvalues={kvals}_max_iter={iters})"
+
     with open('data/serialized_results_for_debugging/results__{}.pkl'.format(name), 'wb') as f:
         pickle.dump(results, f)
 
