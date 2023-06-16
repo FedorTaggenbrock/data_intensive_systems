@@ -52,7 +52,8 @@ def run_clustering(clustering_settings: dict, data: RDD) -> list[tuple]:
     return results
 
 
-def kModes(data: RDD, k: int, clustering_settings):
+
+def route_distance(route1, route2):
     # Painfull code duplication which is the only way I managed to make all the spark dependencies work
     def dictionary_distance(dict1, dict2):
         # This function computes the normalized euclidean distance (in 0-1) for dict representations of (sparse) vectors.
@@ -62,28 +63,29 @@ def kModes(data: RDD, k: int, clustering_settings):
             [int(float(v)) ** 2 for k, v in dict2.items()]))
         return math.sqrt(np.sum(
             [(int(float(dict1.get(product, 0))) - int(float(dict2.get(product, 0)))) ** 2 for product in
-             set(dict1) | set(dict2)])) / (norm_dict1 + norm_dict2)
+                set(dict1) | set(dict2)])) / (norm_dict1 + norm_dict2)
 
-    def route_distance(route1, route2):
-      columns = route1.__fields__[1:]
-      intersection = 0
-      union = 0
-      intersecting_dist = 0
-      # Preferably vectorize this, something with zip?
-      for column in columns:
-          trip1 = route1[column]
-          trip2 = route2[column]
-          if trip1 or trip2:
-              union += 1
-              if trip1 and trip2:
-                  intersection += (1 - dictionary_distance(trip1, trip2))
-      if union != 0:
-          dist = 1 - intersection / union
-      else:
-          dist = 1
-      return dist
+    columns = route1.__fields__[1:]
+    intersection = 0
+    union = 0
+    intersecting_dist = 0
+    # Preferably vectorize this, something with zip?
+    for column in columns:
+        trip1 = route1[column]
+        trip2 = route2[column]
+        if trip1 or trip2:
+            union += 1
+            if trip1 and trip2:
+                intersection += (1 - dictionary_distance(trip1, trip2))
+    if union != 0:
+        dist = 1 - intersection / union
+    else:
+        dist = 1
+    return dist
 
 
+def kModes(data: RDD, k: int, clustering_settings):
+    
     def assign_row_to_centroid_key(row, centroids):
       random_centroid = random.choice(centroids)
       min_centroid = min(centroids, key=lambda centroid: route_distance(row, centroid))

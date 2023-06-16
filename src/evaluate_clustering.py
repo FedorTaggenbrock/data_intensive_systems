@@ -23,7 +23,7 @@ import pandas as pd
 # import matplotlib.pyplot as plt
 
 # from data_visualization import plot_routes, convert_pd_df_to_one_row
-from clustering import run_clustering
+from clustering import run_clustering, route_distance
 from parse_data import get_nested_data, get_vector_dataframe
 
 
@@ -301,6 +301,7 @@ def __run_all_tests():
     clustering_settings = {
         'clustering_algorithm': 'kmodes',
         'k_values': [3],
+        'distance_function': route_distance,
         'max_iterations': 4,
         'debug_flag': True,
     }
