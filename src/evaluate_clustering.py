@@ -3,6 +3,8 @@ import numpy as np
 import scipy.spatial.distance
 from sklearn.metrics import silhouette_score, davies_bouldin_score, calinski_harabasz_score
 import pickle
+import sys
+import os
 
 # Spark etc
 from pyspark import RDD
@@ -11,8 +13,20 @@ from pyspark.sql import SparkSession
 # Typing
 from typing import Any, Callable, Union
 
-# Own module imports (testing)
-from parse_data_3 import get_data_3
+# Own stuff
+from pyspark.sql import SparkSession
+import pandas as pd
+# from sklearn.preprocessing import StandardScaler
+# from sklearn.decomposition import PCA
+# from sklearn.manifold import TSNE
+# from distance_functions import test_distance_function
+# import matplotlib.pyplot as plt
+
+# from data_visualization import plot_routes, convert_pd_df_to_one_row
+from clustering import run_clustering
+from parse_data import get_nested_data, get_vector_dataframe
+
+
 
 def evaluate_clustering(data: RDD, clustering_result: list[tuple[ list[float], dict[str, Any]]], clustering_settings: dict, perfect_centroids = None) -> list[dict]:
     """
@@ -45,8 +59,97 @@ def evaluate_clustering(data: RDD, clustering_result: list[tuple[ list[float], d
 
     # return data.map(lambda point: distance(point, min(centroids, key=lambda centroid: distance(point, centroid)))).sum()
     return evaluation_metrics
-    
 
+def get_best_setting(metrics: list[dict]) -> dict:
+    """
+    Given a list of metrics for different clustering settings, return the best setting.
+    We have several metrics, and want to find the best setting for each metric. We do this using the elbow method.
+    The elbow occurs when the first derivative has its maximum (we do assume the series to be monotically decreasing, this an inherent assumption of the elbow method ),
+    in other words when the second derivative is zero. So we approximate the second derivative. 
+    """
+
+    # Sort the list by the setting k. Note, they should be sorted by default already.
+    sorted_metrics = sorted(metrics, key=lambda x: x['settings']['k'])
+    # Store which metrics are better when they are higher, as the elbow is calculated differently for increasing series.
+    higher_better_metrics = ['silhouette_score']
+    # Final result, to be returned.
+    best_settings_dict = {}
+
+    for metric_name in sorted_metrics[0].keys():
+        if metric_name == 'settings': # Skip the settings; those are not a type of metric
+            continue
+        elif sorted_metrics[0][metric_name] is None: # This should only be the case for average_centroid_deviation (which is calculated by comparing to perfect centroids).
+            continue
+        else:
+            # Get just the scores for this metric
+            scores = [metric[metric_name] for metric in sorted_metrics]
+
+            if len(scores)<=2:
+                # We can't calculate the second derivative then, so just take the first setting.
+                elbow_point_index = 0
+            else:
+
+                # Approximate first derivative
+                diff_1 = np.diff(scores)
+
+                # Approximate second derivative. For metrics that should be minimized, like within cluster distance, we look for the elbow where 
+                # the decrease starts to slow down, so we compute the second derivative and find, where it is maximum.
+                # For metrics that should be maximized, like silhouette score, we look for the elbow where the increase starts to slow down,
+                # so we compute the second derivative and find where it is minimum.
+                if metric_name in higher_better_metrics:
+                    diff_2 = np.diff(diff_1)
+                else:
+                    diff_2 = -np.diff(diff_1)
+            
+                elbow_point_index = np.argmax(diff_2) + 2 # Need to add 2, because diff starts with: list[1]-list[0], so the first element is "lost."
+                
+            # Store the best setting for this metric
+            best_setting = sorted_metrics[elbow_point_index]['settings']
+            best_settings_dict[metric_name] = best_setting
+
+            """OLD CODE
+            # Approximate first derivative (difference between each consecutive score)
+            first_derivative = [scores[i+1] - scores[i] for i in range(len(scores) - 1)]
+
+            # Approximate second derivative (difference between each consecutive first derivative)
+            second_derivative = [first_derivative[i+1] - first_derivative[i] for i in range(len(first_derivative) - 1)]
+
+            # Find the index of the first local minimum or maximum in the second derivative,
+            # depending on whether the metric should be minimized or maximized.
+            if metric_name in higher_better_metrics:
+                # We're looking for a maximum in the first derivative, which is the rate of INCREASE in this case.
+                # This is where the second derivative changes sign, aka a local MAXIMUM in the second derivative.
+                # This indicates the elbow.
+                elbow_point_index = next(i for i in range(len(second_derivative) - 1) if second_derivative[i] > 0 and second_derivative[i+1] < 0)
+            else:
+                # Here, it's almost the same, but we have the rate of DECREASE as the first derivative.
+                # So, we're looking for a local MINIMUM in the second derivative.
+                elbow_point_index = second_derivative.index(min(second_derivative)) + 1
+            """
+    return best_settings_dict
+
+    # Lower is better
+
+
+
+    lowest_within_cluster_distance_sort = sorted(metrics, key=lambda x: x['average_within_cluster_distance'])
+
+    best_setting_within_cluster_distance = lowest_within_cluster_distance_sort[0]['settings']
+    # Lower is better
+    lowest_within_cluster_variance_sort = sorted(metrics, key=lambda x: x['average_within_cluster_variance'])
+    best_setting_within_cluster_variance = lowest_within_cluster_variance_sort[0]['settings']
+    # Lower is better
+    lowest_centroid_deviation_sort = sorted(metrics, key=lambda x: x['average_centroid_deviation'])
+    best_setting_within_cluster_variance = lowest_centroid_deviation_sort[0]['settings']
+    # Higher is better
+    best_setting_silhoutte_score = sorted(metrics, key=lambda x: x['silhouette_score'], reverse=True)[0]['settings']
+
+    # Now, we want to calculate the best setting according to the elbow method. We don't want to do this visually.
+    # We want to find the point where the average within cluster distance starts to decrease less rapidly.
+    # We do this by approximating the second derivative of the average within cluster distance.
+    
+    # First, get a list all the average within cluster distances in their actual order. 
+    average_within_cluster_distances = [metric['average_within_cluster_distance'] for metric in metrics]
 
 def evaluate_kModes(data: RDD, clustering_settings: dict, clustering_result: list[tuple[ list[float], dict[str, Any]]],
                     perfect_centroids: Union[None, tuple]):
@@ -192,102 +295,63 @@ def evaluate_clustering_test2():
 
     return metrics
 
-def get_best_setting(metrics: list[dict]) -> dict:
-    """
-    Given a list of metrics for different clustering settings, return the best setting.
-    We have several metrics, and want to find the best setting for each metric. We do this using the elbow method.
-    The elbow occurs when the first derivative has its maximum (we do assume the series to be monotically decreasing, this an inherent assumption of the elbow method ),
-    in other words when the second derivative is zero. So we approximate the second derivative. 
-    """
 
-    # Sort the list by the setting k. Note, they should be sorted by default already.
-    sorted_metrics = sorted(metrics, key=lambda x: x['settings']['k'])
-    # Store which metrics are better when they are higher, as the elbow is calculated differently for increasing series.
-    higher_better_metrics = ['silhouette_score']
-    # Final result, to be returned.
-    best_settings_dict = {}
 
-    for metric_name in sorted_metrics[0].keys():
-        if metric_name == 'settings': # Skip the settings; those are not a type of metric
-            continue
-        elif sorted_metrics[0][metric_name] is None: # This should only be the case for average_centroid_deviation (which is calculated by comparing to perfect centroids).
-            continue
+def __run_all_tests():
+    clustering_settings = {
+        'clustering_algorithm': 'kmodes',
+        'k_values': [3],
+        'max_iterations': 4,
+        'debug_flag': True
+    }
+
+    spark = SparkSession.builder.appName("Clustering").getOrCreate()
+
+    print("Loading data")
+    # actual_routes_rdd, num_routes = get_nested_data(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json', clustering_settings)
+
+    _ON_COLAB = 'google.colab' in sys.modules
+    if clustering_settings['debug_flag']: print(_ON_COLAB)
+    try:
+        if _ON_COLAB:
+            data_path = '/content/data_intensive_systems/data/1000_0.25_actual_routes.json'
         else:
-            # Get just the scores for this metric
-            scores = [metric[metric_name] for metric in sorted_metrics]
+            data_path = os.getcwd() + '\\data\\1000_0.25_actual_routes.json'
+        actual_routes_rdd = get_nested_data(spark, data_path, clustering_settings)
+    except Exception as e:
+        print('Data path was not found.\n\n', e)
+        data_path = None
+        actual_routes_rdd = get_nested_data(spark, data_path, clustering_settings)
 
-            if len(scores)<=2:
-                # We can't calculate the second derivative then, so just take the first setting.
-                elbow_point_index = 0
-            else:
+    # clustering_settings["num_actual_routes"] = num_routes # not used anymore
 
-                # Approximate first derivative
-                diff_1 = np.diff(scores)
-
-                # Approximate second derivative. For metrics that should be minimized, like within cluster distance, we look for the elbow where 
-                # the decrease starts to slow down, so we compute the second derivative and find, where it is maximum.
-                # For metrics that should be maximized, like silhouette score, we look for the elbow where the increase starts to slow down,
-                # so we compute the second derivative and find where it is minimum.
-                if metric_name in higher_better_metrics:
-                    diff_2 = np.diff(diff_1)
-                else:
-                    diff_2 = -np.diff(diff_1)
-            
-                elbow_point_index = np.argmax(diff_2) + 2 # Need to add 2, because diff starts with: list[1]-list[0], so the first element is "lost."
-                
-            # Store the best setting for this metric
-            best_setting = sorted_metrics[elbow_point_index]['settings']
-            best_settings_dict[metric_name] = best_setting
-
-            """OLD CODE
-            # Approximate first derivative (difference between each consecutive score)
-            first_derivative = [scores[i+1] - scores[i] for i in range(len(scores) - 1)]
-
-            # Approximate second derivative (difference between each consecutive first derivative)
-            second_derivative = [first_derivative[i+1] - first_derivative[i] for i in range(len(first_derivative) - 1)]
-
-            # Find the index of the first local minimum or maximum in the second derivative,
-            # depending on whether the metric should be minimized or maximized.
-            if metric_name in higher_better_metrics:
-                # We're looking for a maximum in the first derivative, which is the rate of INCREASE in this case.
-                # This is where the second derivative changes sign, aka a local MAXIMUM in the second derivative.
-                # This indicates the elbow.
-                elbow_point_index = next(i for i in range(len(second_derivative) - 1) if second_derivative[i] > 0 and second_derivative[i+1] < 0)
-            else:
-                # Here, it's almost the same, but we have the rate of DECREASE as the first derivative.
-                # So, we're looking for a local MINIMUM in the second derivative.
-                elbow_point_index = second_derivative.index(min(second_derivative)) + 1
-            """
-    return best_settings_dict
-
-    # Lower is better
-
-
-
-    lowest_within_cluster_distance_sort = sorted(metrics, key=lambda x: x['average_within_cluster_distance'])
-
-    best_setting_within_cluster_distance = lowest_within_cluster_distance_sort[0]['settings']
-    # Lower is better
-    lowest_within_cluster_variance_sort = sorted(metrics, key=lambda x: x['average_within_cluster_variance'])
-    best_setting_within_cluster_variance = lowest_within_cluster_variance_sort[0]['settings']
-    # Lower is better
-    lowest_centroid_deviation_sort = sorted(metrics, key=lambda x: x['average_centroid_deviation'])
-    best_setting_within_cluster_variance = lowest_centroid_deviation_sort[0]['settings']
-    # Higher is better
-    best_setting_silhoutte_score = sorted(metrics, key=lambda x: x['silhouette_score'], reverse=True)[0]['settings']
-
-    # Now, we want to calculate the best setting according to the elbow method. We don't want to do this visually.
-    # We want to find the point where the average within cluster distance starts to decrease less rapidly.
-    # We do this by approximating the second derivative of the average within cluster distance.
+    print("Running run_clustering().")
+    results = run_clustering(
+        data=actual_routes_rdd,
+        clustering_settings=clustering_settings
+        )
     
-    # First, get a list all the average within cluster distances in their actual order. 
-    average_within_cluster_distances = [metric['average_within_cluster_distance'] for metric in metrics]
+    # Save the results (optional, Abe)
+    save_results_test(results, clustering_settings)
+    
 
+    print("Start evaluating clusters")
+    metrics = evaluate_clustering(actual_routes_rdd, results, clustering_settings)
+    best_settings = get_best_setting(metrics)
+    print("best settings are given by: \n", best_settings)
+
+    return
+
+def save_results_test(results, clustering_settings):
+    os.makedirs('data/serialized_results_for_debugging/', exist_ok=True)
+    name = f"algo={clustering_settings['clustering_algorithm']}_kvalues={clustering_settings['k_values'].join('-')}_max_iter={clustering_settings['max_iterations'].join('-')})"
+    
+    with open('data/serialized_results_for_debugging/results__{}.pkl'.format(name), 'wb') as f:
+        pickle.dump(results, f)
 
 if __name__ == "__main__":
 
-    res = evaluate_clustering_test2()
-    print('\n', res, '\n')
+    # res = evaluate_clustering_test2();    print('\n', res, '\n')
 
     dummy_res = [
         {'settings':{'k': 2},
@@ -307,12 +371,43 @@ if __name__ == "__main__":
          'silhouette_score': 0.0993585317061738}         
          ]
     
-    best_setting = get_best_setting(dummy_res)
-    print(best_setting)
+    # best_setting = get_best_setting(dummy_res); print(best_setting)
 
+    __run_all_tests()
+    
     print('done')
 
- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def evaluate_kModes(data: RDD, clustering_settings: dict, clustering_result: list[tuple[ list[float], dict[str, Any]]],
                     perfect_centroids: Union[None, tuple]) -> dict:
     f"""

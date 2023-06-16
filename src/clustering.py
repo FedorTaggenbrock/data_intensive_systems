@@ -8,8 +8,7 @@ from functools import reduce
 import numpy as np
 import math
 
-import parse_data_3
-import evaluate_clustering
+# import evaluate_clustering
 
 
 from copy import copy
