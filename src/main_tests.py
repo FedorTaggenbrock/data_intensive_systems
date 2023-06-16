@@ -39,7 +39,7 @@ def run_all_tests():
 
     try:
         if _ON_COLAB:
-            data_path = '1000_0.25_actual_routes.json'
+            data_path = '/content/data_intensive_systems/data/1000_0.25_actual_routes.json'
         else:
             data_path = os.getcwd() + '/data/1000_0.25_actual_routes.json'
         actual_routes_rdd, num_routes = get_data_3(spark, data_path, clustering_settings)
