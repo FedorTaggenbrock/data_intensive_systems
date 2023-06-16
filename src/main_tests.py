@@ -33,13 +33,16 @@ def run_all_tests():
 
     print("Loading data")
     # actual_routes_rdd, num_routes = get_data(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json', clustering_settings)
+
     _ON_COLAB = 'google.colab' in sys.modules
+    if clustering_settings['debug_flag']: print(_ON_COLAB)
+
     try:
         if _ON_COLAB:
             data_path = '1000_0.25_actual_routes.json'
         else:
             data_path = os.getcwd() + '/data/1000_0.25_actual_routes.json'
-        actual_routes_rdd, num_routes = get_data_3(spark, 'data/1000_0.25_actual_routes.json', clustering_settings)
+        actual_routes_rdd, num_routes = get_data_3(spark, data_path, clustering_settings)
     except Exception as e:
         print('Data path was not found.\n\n', e)
 
