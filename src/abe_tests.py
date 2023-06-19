@@ -111,7 +111,7 @@ def evaluate_clustering_test2():
 def __run_all_tests():
     clustering_settings = {
         'clustering_algorithm': 'kmeans',
-        'k_values': [8, 10, 12],
+        'k_values': [7, 8, 9, 10, 11, 12],
         'distance_function': route_distance,
         'max_iterations': 4,
         'debug_flag': False,
@@ -173,7 +173,7 @@ def __run_all_tests():
         )
         
     best_settings = get_best_setting(metrics)
-    print("best settings are given by: \n", best_settings)
+    print("\nBest settings are given by: \n", best_settings)
 
     return
 
