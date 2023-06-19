@@ -130,7 +130,7 @@ def __run_all_tests():
     try:
         if _ON_COLAB:
             data_path = '/content/data_intensive_systems' + general_data_path.replace("\\", "/")
-            perfect_centroid_path = '/content/data_intensive_systems/data/10_standard_route.json'
+            perfect_centroid_path = '/content/data_intensive_systems/data/data_12_06/10_standard_route.json'
         else:
             data_path = os.getcwd() + general_data_path
             perfect_centroid_path = os.getcwd() + general_perfect_centroids_path
