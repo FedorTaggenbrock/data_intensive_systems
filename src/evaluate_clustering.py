@@ -16,15 +16,9 @@ from typing import Any, Callable, Union
 # Own stuff
 from pyspark.sql import SparkSession
 import pandas as pd
-# from sklearn.preprocessing import StandardScaler
-# from sklearn.decomposition import PCA
-# from sklearn.manifold import TSNE
-# from distance_functions import test_distance_function
-# import matplotlib.pyplot as plt
 
-# from data_visualization import plot_routes, convert_pd_df_to_one_row
-from clustering import run_clustering, route_distance
-from parse_data import get_nested_data, get_vector_dataframe
+# kmeans
+from pyspark.ml.evaluation import ClusteringEvaluator
 
 
 
@@ -153,7 +147,7 @@ def get_best_setting(metrics: list[dict]) -> dict:
 
 def evaluate_kModes(data: RDD, clustering_settings: dict, clustering_result: list[tuple[ list[float], dict[str, Any]]],
                     perfect_centroids: Union[None, tuple]):
-    f"""
+    """
     Evaluate the clustering of the given data using the given centroids and provided distance function.
     Evaluation is done for each clustering setting, with the entire data. The following metrics are calculated::
     - average_within_cluster_distance
@@ -228,160 +222,31 @@ def evaluate_kModes(data: RDD, clustering_settings: dict, clustering_result: lis
 
         results.append(metrics)
 
-    return 
+    return results
 
+def evaluate_kMeans(clustered_data, predicted_centroids, clustering_settings: dict, perfect_centroids=None) -> dict: # returns ???
+    # Initialize the evaluator
+    evaluator = ClusteringEvaluator()
 
+    # Store the results etc
+    metrics = {}
 
-def evaluate_clustering_test3():
-    spark = SparkSession.builder.appName("Clustering").getOrCreate()
+    # Calculate the metrics
+    metrics['silhouette_score'] = evaluator.evaluate(clustered_data)
 
-    def load_results(path='data/serialized_results_for_debugging/results.pkl'):
-        with open(path, 'rb') as f:
-            return pickle.load(f)
-    
-    pickled_clustering_result = load_results()
+    # Calculate distance between predicted centroids and perfect centroids
+    if perfect_centroids is not None:
+        # First, since predicted centroids are not ordered, we must match them to the perfect centroids
+        # For each predicted centroid, find the perfect centroid that is closest to it, and store the index of that perfect centroid in the list closest_perfect_centroids_index.
+        distances_to_perfect_centroids = np.array([  [distance_function(centroid, perfect_centroid) for perfect_centroid in perfect_centroids]  for centroid in predicted_centroids])
+        closest_perfect_centroids_index = np.argmin(distances_to_perfect_centroids, axis=1)
 
-    actual_routes_rdd, num_routes = get_data_3(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json')
+       
 
-    metrics = evaluate_clustering(
-        data=data,
-        clustering_result=pickled_clustering_result,
-        clustering_settings=clustering_settings,
-        perfect_centroids=perfect_centroids,
-    )
-
-
-
-    return
-
-def evaluate_clustering_test2():
-
-    spark = SparkSession.builder.appName("Clustering").getOrCreate()
-
-    data = spark.sparkContext.parallelize([
-            [1,1,1,1,1],
-            [0,0,0,0,0],
-            [1,1,1,1,0],
-            [0,0,1,1,0],
-            [1,0,1,1,0],
-            [0,0,0,1,0],
-            [1,1,1,0,0],
-            [1,1,0,0,0],
-        ])
-
-    clustering_settings = {
-        'clustering_algorithm': 'kmodes',
-        'k_values': [2, 3],
-        'max_iterations': 2,
-        'distance_function': scipy.spatial.distance.jaccard,
-        'debug_flag': False,
-    }
-
-    perfect_centroids = [[1, 1, 1, 1, 0], [0, 0, 1, 1, 0], [1, 0, 0, 1, 0]]
-    dummy_result = [
-        ([[1, 0, 0, 1, 0], [1, 1, 1, 1, 0]], {'k': 2}),
-        ([[0, 0, 1, 0, 1], [1, 1, 1, 1, 0], [1, 0, 0, 1, 0]], {'k': 3}),
-        ([[0, 0, 1, 0, 1], [1, 1, 1, 1, 0], [1, 0, 0, 1, 0], [1,1,0,1,0]], {'k': 4})
-    ]
-
-    metrics = evaluate_clustering(
-        data=data,
-        clustering_result=dummy_result,
-        clustering_settings=clustering_settings,
-        perfect_centroids=perfect_centroids,
-    )
-
-    spark.stop()
-
-    return metrics
 
 
 
-def __run_all_tests():
-    clustering_settings = {
-        'clustering_algorithm': 'kmodes',
-        'k_values': [3],
-        'distance_function': route_distance,
-        'max_iterations': 4,
-        'debug_flag': True,
-    }
-
-    spark = SparkSession.builder.appName("Clustering").getOrCreate()
-
-    print("Loading data")
-    # actual_routes_rdd, num_routes = get_nested_data(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json', clustering_settings)
-
-    _ON_COLAB = 'google.colab' in sys.modules
-    if clustering_settings['debug_flag']: print(_ON_COLAB)
-    try:
-        if _ON_COLAB:
-            data_path = '/content/data_intensive_systems/data/1000_0.25_actual_routes.json'
-        else:
-            data_path = os.getcwd() + '\\data\\1000_0.25_actual_routes.json'
-        actual_routes_rdd = get_nested_data(spark, data_path, clustering_settings)
-    except Exception as e:
-        print('Data path was not found.\n\n', e)
-        data_path = None
-        actual_routes_rdd = get_nested_data(spark, data_path, clustering_settings)
-
-    # clustering_settings["num_actual_routes"] = num_routes # not used anymore
-
-    print("Running run_clustering().")
-    results = run_clustering(
-        data=actual_routes_rdd,
-        clustering_settings=clustering_settings
-        )
-    
-    # Save the results (optional, Abe)
-    save_results_test(results, clustering_settings)
-    
-
-    print("Start evaluating clusters")
-    metrics = evaluate_clustering(actual_routes_rdd, results, clustering_settings)
-    best_settings = get_best_setting(metrics)
-    print("best settings are given by: \n", best_settings)
-
-    return
-
-def save_results_test(results, clustering_settings):
-    os.makedirs('data/serialized_results_for_debugging/', exist_ok=True)
-    # Make the name of the file
-    algo = clustering_settings['clustering_algorithm']
-    kvals = '[' + '-'.join( [str(kval) for kval in clustering_settings['k_values']] ) + ']'
-    iters = clustering_settings['max_iterations']
-    name = f"algo={algo}_kvalues={kvals}_max_iter={iters})"
-
-    with open('data/serialized_results_for_debugging/results__{}.pkl'.format(name), 'wb') as f:
-        pickle.dump(results, f)
-
-if __name__ == "__main__":
-
-    # res = evaluate_clustering_test2();    print('\n', res, '\n')
-
-    dummy_res = [
-        {'settings':{'k': 2},
-         'average_within_cluster_distance': 0.5166666666666666,
-         'average_within_cluster_variance': 0.0002551118827160493,
-         'average_centroid_deviation': 0.25,
-         'silhouette_score': 0.30505357142857137},
-        {'settings':{'k': 3},
-         'average_within_cluster_distance':0.5944444444444444,
-         'average_within_cluster_variance':0.00020747599451303157,
-         'average_centroid_deviation':0.38888888888888884,
-         'silhouette_score':0.25358420593368236},
-        {'settings': {'k': 4},
-         'average_within_cluster_distance': 0.5183333333333333,
-         'average_within_cluster_variance': 0.00012096749999999996,
-         'average_centroid_deviation': 0.22916666666666666,
-         'silhouette_score': 0.0993585317061738}         
-         ]
-    
-    # best_setting = get_best_setting(dummy_res); print(best_setting)
-
-    __run_all_tests()
-    
-    print('done')
-
+    return metrics
 
 
 

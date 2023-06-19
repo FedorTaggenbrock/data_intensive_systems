@@ -10,5 +10,8 @@ notebooks/*.py
 src/__pycache__/*.pyc
 src/__pycache__/*
 
+# Serialized data
+data/serialized_results_for_debugging
+
 # .json files
 *.json
