@@ -35,11 +35,11 @@ def evaluate_clustering_test3():
     }
 
     _ON_COLAB = 'google.colab' in sys.modules
-    general_pickled_path = r'data\serialized_results_for_debugging\results__algo=kmodes_kvalues=[3]_max_iter=4.pkl'
+    general_pickled_path = r'data\serialized_results_for_debugging\results__algo=kmeans_kvalues=[8-10-12]_max_iter=4)__.pkl'
     general_perfect_centroids_path = r'data\data_12_06\10_standard_route.json'
     if _ON_COLAB:
         pickled_path = '/content/data_intensive_systems/' + general_pickled_path.replace("\\", "/")
-        perfect_centroids = '/content/data_intensive_systems/data/10_standard_routes.json'
+        perfect_centroids = '/content/data_intensive_systems/' + general_perfect_centroids_path.replace("\\", "/")
     else:
         pickled_path = os.getcwd() + general_pickled_path
         perfect_centroids= os.getcwd() + '\\data\\10_standard_routes.json'
@@ -63,7 +63,18 @@ def evaluate_clustering_test3():
     best_setting = get_best_setting(metrics)
     print(best_setting)
 
+    
+
+    # Generate plots
+    metric_plot = plot_metrics(metrics, clustering_settings)
+
+
+
+
     return
+
+
+
 
 def evaluate_clustering_test2():
 
