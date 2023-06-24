@@ -57,162 +57,80 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
-def get_confusion_matrix(clustered_df):
-    # Generate a table which has the standard routes as rows and the cluster centres as columns. It shows for each found cluster center,
-    #  which route it belongs to; this is because the datapoints in each cluster are grouped per standard-route-id.
-    grouped_df = clustered_df.withColumn("sr\predicted_clusters", col("id-sr").substr(-1, 1)) \
-    .groupBy("sr\\predicted_clusters") \
-    .pivot("prediction") \
-    .agg(count("*").alias("count"))
+def get_aligned_df(grouped_df_pd):
+    debug1=False
+    debug2=False
 
-    return grouped_df
+    # Store the original column order
+    old_columns = grouped_df_pd.columns
+    if debug2: print(old_columns) 
+    
+    '''Hungarian algorithm to line up large values on the diagonal'''
+    # Perform the Hungarian algorithm to solve the assignment problem
+    _, col_ind = linear_sum_assignment(-grouped_df_pd.values)  # We multiply by -1 to find the maximum assignment
+    col_names = grouped_df_pd.columns[col_ind]
+    reordered_df = grouped_df_pd[col_names]
+    '''End Hungarian algorithm'''
+    if debug1: print('reordered_df:', reordered_df.head(), '\n')
 
+    # Make a mapping from the old clusters to the new clusters
+    old_to_new_cluster_index_map = {old:new for old,new in zip(old_columns, reordered_df.columns)}
+    if debug2: print(old_to_new_cluster_index_map)
+    
+    # Reset the column-names (so the names of predicted clusters) to start from 0
+    col_mapping = {col: i for i, col in enumerate(reordered_df.columns)}
+    reordered_df.columns = [col_mapping.get(col, len(reordered_df.columns)) for col in reordered_df.columns]
 
-def plot_confusion_matrix(clustered_df):
-    """
-    Plots the confusion matrix.
+    return reordered_df, old_to_new_cluster_index_map
 
-    Args:
-        grouped_df: A DataFrame containing the confusion matrix data.
-
-    Returns:
-        A matplotlib figure representing the confusion matrix.
-    """
-
-    # The id-number of the found cluster centers does not necessarily match the id-number of the standard routes.
-    # Therefore, we need to map the found cluster center id's to the standard route id's, by seeing which cluster center
-    # it corresponds with best. This is done by taking the max index (in terms of the row) for each column. 
-    # This is the standard route id that corresponds with the cluster center. However, a problem is there can be more or fewer cluster centers
-    # than standard routes. Therefore, we need to check if there are duplicates in the resulting list of max-indices. The highest of the two, should be assigned 
-    # to that cluster center. The other one should be assigned to the next-best cluster-center, but only if it is a better match than the current one. Then, the current one
-    # needs to be checked, and so on. Since there may be more centers than routes, it is okay that some get an id higher than the number of routes.
-
+def plot_confusion_matrix2(clustered_df):
     debug1=False
     debug2=True
 
     # Get the data from the dataframe into pandas format
     grouped_df = get_confusion_matrix(clustered_df)
+    if debug1: print('grouped_df:\n', grouped_df, '\n')
+
     grouped_df_pd = grouped_df.toPandas()
+    if debug1: print('grouped_df:\n', grouped_df_pd.head(), '\n')
+
     grouped_df_pd = grouped_df_pd.set_index('sr\\predicted_clusters').fillna(0)
+    if debug1: print('grouped_df:\n', grouped_df_pd.head(), '\n')
 
-    # Sort DataFrame by index of standard routes
-    grouped_df_pd = grouped_df_pd.sort_index()
+    # Sort DataFrame rows by index of standard routes (so that they go from 0 to ...)
+    grouped_df_pd = grouped_df_pd.sort_index(ascending=False)
+    
+    # Reorder the columns
+    reordered_df, old_to_new_cluster_index_map = get_aligned_df(grouped_df_pd)
+    if debug2: print(old_to_new_cluster_index_map)
 
-    # 1. Get max indices
-    max_indices = grouped_df_pd.idxmax()
 
-    if debug1: print(grouped_df_pd, '\n')
-    if debug1: print('max_indices:',max_indices)
+    # Calculate the ideal datapoints per cluster
+    total_datapoints = reordered_df.sum().sum()
+    ideal_datapoints_per_cluster = total_datapoints / len(reordered_df.index)
 
-    # 2. Handle duplicate max indices
+    # Normalize each column by its sum or ideal_datapoints_per_cluster, whichever is greater
+    column_sums = reordered_df.sum(axis=0)
+    normalizing_values = column_sums.where(column_sums > ideal_datapoints_per_cluster, ideal_datapoints_per_cluster)
+    normalized_per_column_df = reordered_df.div(normalizing_values, axis=1)
 
-    # Normalize the data to reflect the "strength" of the association between the clusters and the routes
-    grouped_df_pd_normalized = grouped_df_pd.divide(grouped_df_pd.sum(axis=0), axis=1)
-
-    # 2. Handle duplicate max indices
-    max_values = grouped_df_pd_normalized.max()
-    assigned_clusters = []
-    unassigned_routes = []
-
-    for idx, val in max_indices.duplicated(keep=False).items():
-        if val:
-            duplicates = max_indices[max_indices == max_indices[idx]]
-            for dup in duplicates.index:
-                # 3. Reassign to next best
-                if max_values[dup] < max_values[idx] or idx in assigned_clusters:
-                    new_assignment = grouped_df_pd_normalized[dup].nlargest(2).index[1]
-                    if new_assignment in assigned_clusters:
-                        unassigned_routes.append(idx)
-                    else:
-                        max_indices[dup] = new_assignment
-                        assigned_clusters.append(new_assignment)
-                else:
-                    assigned_clusters.append(idx)
+    final_df = normalized_per_column_df
     
 
-    # 4. Handling more cluster centers than routes
-    max_indices_list = max_indices.tolist()
-
-    if debug1: print('max_indices_list',max_indices_list)
-
-    if len(max_indices_list) > len(set(max_indices_list)):
-        unique_vals = list(set(max_indices_list))
-        duplicates = list(set([x for x in max_indices_list if max_indices_list.count(x) > 1]))
-        for dup in duplicates:
-            indices = [i for i, x in enumerate(max_indices_list) if x == dup]
-            for ind in indices[1:]:
-                max_indices_list[ind] = max(unique_vals) + 1
-                unique_vals.append(max_indices_list[ind])
-        
-        if debug1: print('unique_vals', unique_vals)
-        if debug1: print('duplicates', duplicates)
-    else:
-        if debug1: print('not len(max_indices_list) > len(set(max_indices_list))')
-
-    # 5. Handling fewer cluster centers than routes
-
-    if debug1: print(f"unassigned routes: {unassigned_routes}")
-
-    for unassigned in unassigned_routes:
-        max_indices_list[unassigned] = max(unique_vals) + 1
-        unique_vals.append(max_indices_list[unassigned])
-
-    # Create a mapping from column names to their new indices.
-    col_mapping = {col: i for i, col in enumerate(max_indices_list)}
-
-    # Reorder the columns by the mapped indices.
-
-    # The key=lambda x: [col_mapping.get(col, len(max_indices_list)) for col in x]
-    # part will use the index in max_indices_list if the column is present there,
-    # or the length of max_indices_list otherwise. This will place any extra columns
-    # that are not in max_indices_list at the end.
-    grouped_df_pd = grouped_df_pd.sort_index(axis=1, key=lambda x: [col_mapping.get(col, len(max_indices_list)) for col in x])
-    # if debug1: print(grouped_df_pd)   
-
-    # Normalization and deviation score calculation
-    normalized_grouped_df_pd = grouped_df_pd.divide(grouped_df_pd.sum(axis=0), axis=1)
-
-    # Reset the indices of the predicted clusters (the columns), making them start from 0. However, save the mapping from the old indices to the new indices.
-    col_mapping = {col: i for i, col in enumerate(normalized_grouped_df_pd.columns)}
-    normalized_grouped_df_pd.columns = [col_mapping.get(col, len(normalized_grouped_df_pd.columns)) for col in normalized_grouped_df_pd.columns]
-
-    ''' NOTE: here we  try to set the highest elements on the diagonal, using ...'''
-    # Now let's iteratively find the max element, and reorder columns so that this element goes to the diagonal
-    # for _ in range(len(normalized_grouped_df_pd.columns)):
-    #     # Get the coordinates of the max element
-    #     max_row_label = normalized_grouped_df_pd.max(axis=1).idxmax()
-    #     max_col_label = normalized_grouped_df_pd.loc[max_row_label].idxmax()
-
-    #     # Convert labels to integer indices
-    #     max_row = normalized_grouped_df_pd.index.to_list().index(max_row_label)
-    #     max_col = normalized_grouped_df_pd.columns.to_list().index(max_col_label)
-
-    #     # Place the column of the max element to the position of its row index
-    #     cols = list(normalized_grouped_df_pd.columns)
-    #     cols.remove(max_col_label)
-    #     cols.insert(max_row, max_col_label)
-    #     normalized_grouped_df_pd = normalized_grouped_df_pd[cols]
-
-    #     # Remove this row and column from the dataframe
-    #     normalized_grouped_df_pd = normalized_grouped_df_pd.drop(max_row_label)
-    #     normalized_grouped_df_pd = normalized_grouped_df_pd.drop(max_col_label, axis=1)
-
-    ''' END: of setting highest values on diagonal'''
-    
-    final_df = normalized_grouped_df_pd
-
-    if debug1: print(final_df)
-
-    # Now we can use this `deviation_score` dataframe to visualize it.
+    # Now visualize the normalized dataframe. But, use the original values for the annotations.
     fig, ax = plt.subplots(figsize=(10, 10))
-    sns.heatmap(final_df, annot=True, fmt='g', cmap='Blues', ax=ax)
+    annotation_df = reordered_df.astype(int)
+    
+    sns.heatmap(final_df,
+                annot=annotation_df, # Comment out if you want the normalized value per predicted cluster center
+                # annot=True, # Uncomment if you do the above
+                fmt='g', cmap='Blues', ax=ax
+    )
     ax.set_xlabel('Cluster Center ID')
     ax.set_ylabel('Standard Route ID')
-    ax.set_title('Confusion Matrix Deviation Score')
+    ax.set_title('Confusion Matrix')
 
     return fig
-
-
 
     
 
