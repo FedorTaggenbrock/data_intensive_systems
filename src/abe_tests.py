@@ -13,13 +13,15 @@ from pyspark.sql import SparkSession
 # Typing
 from typing import Any, Callable, Union
 
-# Own stuff
+
 from pyspark.sql import SparkSession
 import pandas as pd
 
+# Own stuff
 
 # from data_visualization import plot_routes, convert_pd_df_to_one_row
-from clustering import run_clustering, route_distance
+from plot_clustering import plot_metrics, plot_confusion_matrix
+from clustering import run_clustering, run_final_clustering, route_distance
 from parse_data import get_nested_data, get_vector_dataframe, get_data
 from evaluate_clustering import evaluate_clustering, get_best_setting
 
@@ -28,26 +30,46 @@ def evaluate_clustering_test3():
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
     clustering_settings = {
         'clustering_algorithm': 'kmodes',
-        'k_values': [3],
+        'k_values': [8,10,12],
         'distance_function': route_distance,
         'max_iterations': 4,
         'debug_flag': True,
     }
 
+    # Load datafile etc
     _ON_COLAB = 'google.colab' in sys.modules
-    general_pickled_path = r'data\serialized_results_for_debugging\results__algo=kmeans_kvalues=[8-10-12]_max_iter=4)__.pkl'
-    general_perfect_centroids_path = r'data\data_12_06\10_standard_route.json'
+    general_pickled_path = r'\data\serialized_results_for_debugging\results__algo=kmeans_kvalues=[8-10-12]_max_iter=4)__.pkl'
+    general_perfect_centroids_path = r'\data\data_12_06\10_standard_route.json'
+
+    general_data_path = r'\data\data_12_06\1000_0.25_actual_routes.json'
+    general_perfect_centroids_path = r'\data\data_12_06\10_standard_route.json'
     if _ON_COLAB:
         pickled_path = '/content/data_intensive_systems/' + general_pickled_path.replace("\\", "/")
         perfect_centroids = '/content/data_intensive_systems/' + general_perfect_centroids_path.replace("\\", "/")
+
+        data_path = '/content/data_intensive_systems' + general_data_path.replace("\\", "/")
+        perfect_centroid_path = '/content/data_intensive_systems/data/data_12_06/10_standard_route.json'
     else:
         pickled_path = os.getcwd() + general_pickled_path
         perfect_centroids= os.getcwd() + '\\data\\10_standard_routes.json'
-    
-    pickled_clustering_result = load_results(pickled_path)
 
-    results = pickled_clustering_result[0]
-    metrics = pickled_clustering_result[1]
+        data_path = os.getcwd() + general_data_path
+        perfect_centroid_path = os.getcwd() + general_perfect_centroids_path
+    
+    if clustering_settings['clustering_algorithm'] == 'kmodes':
+        data = get_nested_data(spark, data_path, clustering_settings)
+        perfect_centroids = get_nested_data(spark, perfect_centroid_path, clustering_settings)
+    elif clustering_settings['clustering_algorithm'] == 'kmeans':
+        data, indices2from_to_prods = get_vector_dataframe(spark, data_path, clustering_settings["debug_flag"])
+        perfect_centroids = get_vector_dataframe(spark, perfect_centroid_path, clustering_settings["debug_flag"])
+    else:
+        data = None
+        perfect_centroids = None
+
+    # Load results
+    pickled_clustering_result = load_results(pickled_path)
+    results: list = pickled_clustering_result[0]
+    metrics: list = pickled_clustering_result[1]
 
     if not metrics: # then kmodes
         actual_routes_rdd, indices2from_to_prods = get_data(spark, 'data_intensive_systems/data/1000_0.25_actual_routes.json', clustering_settings)
@@ -60,16 +82,34 @@ def evaluate_clustering_test3():
             perfect_centroids=perfect_centroids,
         )
 
+    # Get best setting
     best_setting = get_best_setting(metrics)
-    print(best_setting)
+    print(best_setting) 
 
-    
-
+   
     # Generate plots
     metric_plot = plot_metrics(metrics, clustering_settings)
+    metric_plot.show()
+
+    # Get final results
+    clustered_data, predicted_centroids, metric = run_final_clustering(
+        data=data,
+        clustering_settings=clustering_settings,
+        best_setting=best_setting,
+    )
+
+    # Show confusion matrix
+    confusion_plot = plot_confusion_matrix(clustered_data) #  indices2from_to_prods)
 
 
 
+
+    print('done')
+
+    # TODO:
+    # Make confusion matrix using code, convert to pandas df, sort SR column, find some way to determine which found cluster matches which standard route best
+    # Make files with k in range 6-9 and 6-10, and 11-14, to see what happens with the confusion matrix.
+    # Show found elbow point and n-standard-routes in the parameter-tune-plots
 
     return
 
@@ -228,7 +268,8 @@ if __name__ == "__main__":
     
     # best_setting = get_best_setting(dummy_res); print(best_setting)
 
-    __run_all_tests()
+    # __run_all_tests()
+    evaluate_clustering_test3()
     
     print('done')
 

@@ -1,30 +1,37 @@
-from copy import copy
-from statistics import mode
-from pyspark import RDD
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import udf
-from functools import reduce
-
-import numpy as np
-import math
-
-from copy import copy
-from statistics import mode
-from pyspark import RDD
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import udf
-from functools import reduce
-
 import numpy as np
 import math
 from collections import Counter
 import random
+import os
+from copy import copy
+from statistics import mode
+
+from functools import reduce
+import numpy as np
+import math
+from copy import copy
+from statistics import mode
+
+# Spark
+from pyspark import RDD
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import udf
+from pyspark import RDD
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import udf
+from functools import reduce
+
+
+from pyspark.sql import DataFrame
 
 # kmeans
 from pyspark.ml.clustering import KMeans
 
 # Evaluation
 from evaluate_clustering import evaluate_kMeans
+
+
+
 
 def run_clustering(data, clustering_settings: dict, perfect_centroids=None) -> tuple[list, list]:
     '''Define variables to store results.'''
@@ -75,8 +82,9 @@ def run_clustering(data, clustering_settings: dict, perfect_centroids=None) -> t
 
             if clustering_settings["debug_flag"]:
                 print("The centroids for  k = ", current_k, " are given by:\n")
-                for c in predicted_centroids:
-                    print(c)
+                # for c in predicted_centroids: print(c)
+                pass
+                
     else:
         print("Clustering algorithm setting not recognized in run_and_tune().")
 
@@ -84,7 +92,51 @@ def run_clustering(data, clustering_settings: dict, perfect_centroids=None) -> t
         print("The output results for multiple k is given by:", results)
     return (results, metrics)
 
-def kMeans(data, k: int, clustering_settings: dict): # returns ???
+def run_final_clustering(data, best_setting: dict, clustering_settings: dict, perfect_centroids=None) -> tuple[DataFrame, list, dict]:
+    """To be ran after tuning, will be very similar to the run_clustering, but the best_setting can be used."""
+
+    clustered_data = None
+    predicted_centroids = None
+    curr_metric = None
+
+    # Check which clustering algortihm to run
+    if clustering_settings['clustering_algorithm'] == 'kmodes':
+        clustered_data, predicted_centroids = kModes(
+            data=data,
+            k=best_setting['k'],
+            clustering_settings=clustering_settings
+        )
+
+        curr_metric = evaluate_kMeans(
+            clustered_data=clustered_data,
+            predicted_centroids=predicted_centroids,
+            perfect_centroids=perfect_centroids,
+            clustering_settings=clustering_settings
+        )
+        raise NotImplementedError("kmodes not implemented yet")
+    
+    else: # clustering_settings['clustering_algorithm'] == 'kmeans':
+        # Cluster and evaluate
+        clustered_data, predicted_centroids = kMeans(
+            data=data,
+            k=best_setting['k'],
+            clustering_settings=clustering_settings
+        )
+
+        curr_metric = evaluate_kMeans(
+            clustered_data=clustered_data,
+            predicted_centroids=predicted_centroids,
+            perfect_centroids=perfect_centroids,
+            clustering_settings=clustering_settings
+        )
+
+    return (clustered_data, predicted_centroids, curr_metric)
+
+
+
+
+
+def kMeans(data: DataFrame, k: int, clustering_settings: dict) -> tuple[DataFrame, list]:
     # Creating the K-means instance
     kmeans = KMeans(k=k)
 
@@ -93,7 +145,7 @@ def kMeans(data, k: int, clustering_settings: dict): # returns ???
 
     # Getting the cluster predictions
     clustered_data = model.transform(data)
-
+ 
     if clustering_settings["debug_flag"]:
         print("clustered_df structure:")
         clustered_data.show(5)
@@ -129,7 +181,6 @@ def route_distance(route1, route2):
     else:
         dist = 1
     return dist
-
 
 def kModes(data: RDD, k: int, clustering_settings):
     def dictionary_distance(dict1, dict2):
