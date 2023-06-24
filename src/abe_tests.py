@@ -29,16 +29,16 @@ from evaluate_clustering import evaluate_clustering, get_best_setting
 def evaluate_clustering_test3():
     spark = SparkSession.builder.appName("Clustering").getOrCreate()
     clustering_settings = {
-        'clustering_algorithm': 'kmodes',
-        'k_values': [8,10,12],
+        'clustering_algorithm': 'kmeans',
+        'k_values': [4,5,6,7,8,9,10,11,12,13],
         'distance_function': route_distance,
         'max_iterations': 4,
-        'debug_flag': True,
+        'debug_flag': False,
     }
 
     # Load datafile etc
     _ON_COLAB = 'google.colab' in sys.modules
-    general_pickled_path = r'\data\serialized_results_for_debugging\results__algo=kmeans_kvalues=[8-10-12]_max_iter=4)__.pkl'
+    general_pickled_path = r'\data\serialized_results_for_debugging\results__algo=kmeans_kvalues=[4-5-6-7-8-9-10-11-12-13]_maxiter=4__.pkl'
     general_perfect_centroids_path = r'\data\data_12_06\10_standard_route.json'
 
     general_data_path = r'\data\data_12_06\1000_0.25_actual_routes.json'
@@ -209,7 +209,8 @@ def __run_all_tests():
     )
     
     # Save the results (optional, Abe)
-    save_results_test(results_and_metrics, clustering_settings)
+    to_save = (results_and_metrics, clustering_settings)
+    save_results_test(to_save, clustering_settings)
 
     # Evaluate the clustering
     results = results_and_metrics[0]
@@ -234,7 +235,7 @@ def save_results_test(results, clustering_settings):
     algo = clustering_settings['clustering_algorithm']
     kvals = '[' + '-'.join( [str(kval) for kval in clustering_settings['k_values']] ) + ']'
     iters = clustering_settings['max_iterations']
-    name = f"algo={algo}_kvalues={kvals}_max_iter={iters}"
+    name = f"algo={algo}_kvalues={kvals}_maxiter={iters}"
 
     with open('data/serialized_results_for_debugging/results__{}__.pkl'.format(name), 'wb') as f:
         pickle.dump(results, f)

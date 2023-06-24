@@ -63,7 +63,7 @@ def get_confusion_matrix(clustered_df):
 
 import seaborn as sns
 
-def plot_confusion_matrix(grouped_df):
+def plot_confusion_matrix(clustered_df):
     """
     Plots the confusion matrix.
 
@@ -84,6 +84,7 @@ def plot_confusion_matrix(grouped_df):
 
 
     # Get the data from the dataframe into pandas format
+    grouped_df = get_confusion_matrix(clustered_df)
     grouped_df_pd = grouped_df.toPandas()
     grouped_df_pd = grouped_df_pd.set_index('sr\\predicted_clusters').fillna(0)
 

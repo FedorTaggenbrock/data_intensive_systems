@@ -101,9 +101,10 @@ def run_final_clustering(data, best_setting: dict, clustering_settings: dict, pe
 
     # Check which clustering algortihm to run
     if clustering_settings['clustering_algorithm'] == 'kmodes':
+        print(f"Running final clustering with k={best_setting['k']}")
         clustered_data, predicted_centroids = kModes(
             data=data,
-            k=best_setting['silhoutte_score']['k'],
+            k=best_setting['k'],
             clustering_settings=clustering_settings
         )
 
@@ -117,9 +118,10 @@ def run_final_clustering(data, best_setting: dict, clustering_settings: dict, pe
     
     else: # clustering_settings['clustering_algorithm'] == 'kmeans':
         # Cluster and evaluate
+        print(f"Running final clustering with k={best_setting['k']}")
         clustered_data, predicted_centroids = kMeans(
             data=data,
-            k=best_setting['silhoutte_score']['k'],
+            k=best_setting['k'],
             clustering_settings=clustering_settings
         )
 

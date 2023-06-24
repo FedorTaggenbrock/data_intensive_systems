@@ -123,13 +123,13 @@ def get_best_setting(metrics: list[dict]) -> dict:
 
     # Initialize the final dictionary with empty lists for each setting. best_settings_dict looks like: {'silhouette_score': {'k': 7}}
     temp_dict = {setting:[] for setting in best_settings_dict['silhouette_score']} # Silhoutte score as random example
-    final_dict = {}
+    final_dict = {setting:0 for setting in best_settings_dict['silhouette_score']}
 
     # Since me have multiple metrics, we want to average the best settings for each metric, and round it.
     # We do this by taking the average of each setting, and rounding it to the nearest integer.
     for metric_name, metric_value in best_settings_dict.items():
         for setting, value in metric_value.items():
-            final_dict[setting].append(value)
+            temp_dict[setting].append(value)
     # Then set each list to its average
     for setting, value in temp_dict.items():
         final_dict[setting] = int(round(np.mean(value)))
