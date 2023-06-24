@@ -103,7 +103,7 @@ def run_final_clustering(data, best_setting: dict, clustering_settings: dict, pe
     if clustering_settings['clustering_algorithm'] == 'kmodes':
         clustered_data, predicted_centroids = kModes(
             data=data,
-            k=best_setting['k'],
+            k=best_setting['silhoutte_score']['k'],
             clustering_settings=clustering_settings
         )
 
@@ -119,7 +119,7 @@ def run_final_clustering(data, best_setting: dict, clustering_settings: dict, pe
         # Cluster and evaluate
         clustered_data, predicted_centroids = kMeans(
             data=data,
-            k=best_setting['k'],
+            k=best_setting['silhoutte_score']['k'],
             clustering_settings=clustering_settings
         )
 
