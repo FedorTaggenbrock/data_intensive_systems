@@ -131,7 +131,7 @@ def get_best_setting(metrics: list[dict]) -> dict:
         for setting, value in metric_value.items():
             final_dict[setting].append(value)
     # Then set each list to its average
-    for setting, value in final_dict.items():
+    for setting, value in temp_dict.items():
         final_dict[setting] = int(round(np.mean(value)))
         
 
