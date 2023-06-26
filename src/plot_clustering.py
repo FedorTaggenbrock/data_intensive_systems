@@ -10,7 +10,10 @@ from pyspark.sql.functions import col, count
 import matplotlib.pyplot as plt
 import numpy as np
 
-import scipy.optimize import linear_sum_assignment
+try:
+    from scipy.optimize import linear_sum_assignment
+except ImportError as import_error:
+    print(import)
 # import linear_sum_assignment
 
 
