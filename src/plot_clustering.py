@@ -13,7 +13,7 @@ import numpy as np
 try:
     from scipy.optimize import linear_sum_assignment
 except ImportError as import_error:
-    print(import)
+    print(import_error)
 # import linear_sum_assignment
 
 
