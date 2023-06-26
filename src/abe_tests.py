@@ -20,7 +20,7 @@ import pandas as pd
 # Own stuff
 
 # from data_visualization import plot_routes, convert_pd_df_to_one_row
-from plot_clustering import plot_metrics, plot_confusion_matrix
+from plot_clustering import plot_metrics, plot_confusion_matrix2
 from clustering import run_clustering, run_final_clustering, route_distance
 from parse_data import get_nested_data, get_vector_dataframe, get_data
 from evaluate_clustering import evaluate_clustering, get_best_setting
@@ -98,9 +98,10 @@ def evaluate_clustering_test3():
         best_setting=best_setting,
     )
 
-    # Show confusion matrix
-    confusion_plot = plot_confusion_matrix(clustered_data) #  indices2from_to_prods)
+    
 
+    # Show confusion matrix
+    confusion_plot = plot_confusion_matrix2(clustered_data) #  indices2from_to_prods)
 
 
 

@@ -4,7 +4,17 @@ import seaborn as sns
 
 from pyspark.sql.functions import col, count
 
-import seaborn as sns
+
+
+from pyspark.sql.functions import col, count
+import matplotlib.pyplot as plt
+import numpy as np
+
+import scipy.optimize import linear_sum_assignment
+# import linear_sum_assignment
+
+
+
 
 def plot_metrics(metrics, clustering_settings):
 
@@ -51,11 +61,15 @@ def plot_metrics(metrics, clustering_settings):
         ax.set_ylabel('score')
     return fig
 
-import seaborn as sns
-from pyspark.sql.functions import col, count
-import matplotlib.pyplot as plt
-import numpy as np
-from scipy.optimize import linear_sum_assignment
+def get_confusion_matrix(clustered_df):
+    # Generate a table which has the standard routes as rows and the cluster centres as columns. It shows for each found cluster center,
+    #  which route it belongs to; this is because the datapoints in each cluster are grouped per standard-route-id.
+    grouped_df = clustered_df.withColumn("sr\predicted_clusters", col("id-sr").substr(-1, 1)) \
+    .groupBy("sr\\predicted_clusters") \
+    .pivot("prediction") \
+    .agg(count("*").alias("count"))
+
+    return grouped_df
 
 def get_aligned_df(grouped_df_pd):
     debug1=False
@@ -67,7 +81,7 @@ def get_aligned_df(grouped_df_pd):
     
     '''Hungarian algorithm to line up large values on the diagonal'''
     # Perform the Hungarian algorithm to solve the assignment problem
-    _, col_ind = linear_sum_assignment(-grouped_df_pd.values)  # We multiply by -1 to find the maximum assignment
+    _, col_ind = scipy.optimize.linear_sum_assignment(-grouped_df_pd.values)  # We multiply by -1 to find the maximum assignment
     col_names = grouped_df_pd.columns[col_ind]
     reordered_df = grouped_df_pd[col_names]
     '''End Hungarian algorithm'''
@@ -115,7 +129,7 @@ def plot_confusion_matrix2(clustered_df):
     normalized_per_column_df = reordered_df.div(normalizing_values, axis=1)
 
     final_df = normalized_per_column_df
-    
+
 
     # Now visualize the normalized dataframe. But, use the original values for the annotations.
     fig, ax = plt.subplots(figsize=(10, 10))
