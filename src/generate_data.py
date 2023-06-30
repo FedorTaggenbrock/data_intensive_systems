@@ -6,6 +6,7 @@ File which generates the dataset and save it in the folder called "data"
 
 import random
 import json
+import os
 import copy
 from threading import Thread
 import threading
@@ -30,9 +31,12 @@ def generate_data():
         def __str__(self) -> str:
             return '"' + str(self.name) + '":' + str(self.count)
         
-        def permute(self, prob, verbose = False):
+        def permute(self, probability, verbose = False):
             """ This function permuts the amount of a product given some percentage """
-            self.count = random.choice(self.range)
+            r = random.random()
+
+            if r < probability:
+                self.count = random.choice(self.range)
 
             # if verbose: print(f"[Product permutation]: {str(self)}")
         
@@ -93,7 +97,7 @@ def generate_data():
             """
             r = random.random()
 
-            if r >= 0 and r < 1/3:
+            if r < probability / 2:
                 """ add an unique product to the productlist """
                 unique = False
                 while not unique:
@@ -108,7 +112,7 @@ def generate_data():
 
                 # if verbose: print(f"[Stop permutation 1]: added {str(product)}")
 
-            if r >= 1/3 and r <  2/3:
+            if probability / 2 <= r < probability:
                 """ remove a random product in the list """
                 if len(self.products) > 2:
                     product = random.choice(self.products)
@@ -164,11 +168,11 @@ def generate_data():
                 2. P( remove stop  ) = percentage
                 3. P( permute stop ) = percentage
             """
-            r = random.random() * 3
+            r = random.random()
 
             # TODO: change probility intervals
 
-            if r >= probability * 0 and r < probability * 1:
+            if r < probability / 2:
                 """ add a stop to the stops list """
                 # random position to insert
                 idx = self.stops.index(random.choice(self.stops))
@@ -203,12 +207,12 @@ def generate_data():
 
                     if verbose: print(f"[Route permutation 1]: added {str(stop)} at {idx}, previous {prev_stop}")
                 
-            if r >= probability * 1 and r < probability * 2:
+            if probability / 2 <= r < probability:
                 """ remove a random stop in the list """
                 stop = random.choice(self.stops)
                 idx  = self.stops.index(stop)
 
-                # only performe linked-list remove operation if not start or end
+                # only perform linked-list remove operation if not start or end
                 if idx != 0 and idx != len(self.stops) - 1:
                     # [a,b], [b,c], [c,d] => [a,c], [c,d]
                     prev_stop = self.stops[idx - 1]
@@ -246,13 +250,51 @@ def generate_data():
                 routes.append( r )
 
             return routes
-        
+
+        @staticmethod
+        def scramble_routes(routes, iterations):
+            for a in range(iterations):
+                route_1 = random.choice(routes)
+                route_2 = random.choice(routes)
+
+                stop_route_1 = random.choice(route_1.stops)
+                stop_route_2 = random.choice(route_2.stops)
+
+                # count = max(len(stop_route_2.products), len(stop_route_1.products))
+                #
+                # n = random.choice(range(count))
+                #
+                # for b in range(n):
+                #     product_1 = random.choice(stop_route_1.products)
+                #     product_2 = random.choice(stop_route_2.products)
+                #
+                #     stop_route_1.products.remove(product_1)
+                #     stop_route_1.products.append(product_2)
+                #
+                #     stop_route_2.products.append(product_1)
+                #     stop_route_2.products.remove(product_2)
+
+                # route_1.stops.remove(stop_route_1)
+                route_1.stops.append(stop_route_2)
+
+                # route_2.stops.remove(stop_route_2)
+                route_2.stops.append(stop_route_1)
+
+                print("scrambled")
+
+            return routes
+
         @staticmethod
         def write_routes_json(routes: list) -> str:
-            s = "["
+            # s = "["
+            # for r in routes:
+            #     s += (str(r) + ",")
+            # s = s[:-1] + ']'
+            # return s
+            s = ""
             for r in routes:
                 s += (str(r) + ",")
-            s = s[:-1] + ']'
+            s = s[:-1] + ','
             return s
         
         @staticmethod
@@ -286,48 +328,75 @@ def generate_data():
             return routes
 
 
+    product_range_ = range(5, 15)
+    product_count_ = range(1, 100)
+
     # routes = Route.generate_routes(
-    #     10,
-    #     city_count=range(5, 10), 
-    #     product_range=range(2, 5), 
-    #     product_count=range(5, 20),
-    #     city_list=cities, 
-    #     product_list=products, 
+    #     25,
+    #     city_count=range(5, 15),
+    #     product_range=product_range_,
+    #     product_count=product_count_,
+    #     city_list=cities,
+    #     product_list=products,
     # )
 
+    instance = 'bigger'
 
     routes = Route.read_routes_json(
-        '10_standard_route.json', 
-        mutate_product_range=range(2, 5), 
-        mutate_product_count=range(5, 20), 
-        product_list=products, 
+        f"../25_{instance}_standard_route.json",
+        mutate_product_range=product_range_,
+        mutate_product_count=product_count_,
+        product_list=products,
         city_list=cities
     )
 
-    permuted = []
-    n = 100
-    permutation = 0.25
+    # routes_ = Route.scramble_routes(routes, 5)
+    #
+    # f = open(f"../{len(routes)}_baseline_scrambled_standard_route.json", "w")
+    # f.write(Route.write_routes_json(routes_))
+    # f.close()
+
+    ar = 25
+    max_size = 50000
+
+    n = int(max_size / ar)
+    permutation = 0.75
 
     def permutate_route(id, route, p):
         c = 0
         id_ = 0
 
+        permuted = []
+
         for i in range(n):
             route_ = copy.deepcopy(route)
-            
+
             route_.permute(p)
             route_.sr = route.id
             route_.id = id_
             permuted.append(route_)
             id_ += 1
 
-            if (100/n*i) % 10 == 1:
+            interval = 2.5
+            if (100/n*i) % interval == 1:
                 c+=1
-                print(f"Thread {id}: {c*10}%")
+                print(f"Thread {id}: {c*interval}%")
+                # f = open(f"sr={len(routes)}_ar={n}_p={permutation}_actual_routes.json", "a")
+                # f.write(Route.write_routes_json(permuted))
+                # f.close()
+                # permuted = []
+
+        f = open(f"p={permutation}_{instance}_actual_routes.json", "a")
+        f.write(Route.write_routes_json(permuted))
+        f.close()
 
     st = time.time()
 
     threads = []
+    f = open(f"p={permutation}_{instance}_actual_routes.json", "w")
+    f.write('[')
+    f.close()
+
     for route in routes:
         print(f"Creating thread {route.id}")
         thread = Thread(target= permutate_route, args=[route.id, route, permutation])
@@ -337,23 +406,27 @@ def generate_data():
     while threading.active_count() > 1:
         for t in threads:
             t.join()
-            print (f"{t}, is done.")
+            print(f"{t}, is done.")
     print("Done permutating")
 
-    f = open(f"{n*len(routes)}_{permutation}_actual_routes.json", "w")
-    f.write(Route.write_routes_json(permuted))
-    f.close()
-        
-
-    f = open(f"{len(routes)}_standard_route.json", "w")
-    f.write(Route.write_routes_json(routes))
+    f = open(f"p={permutation}_{instance}_actual_routes.json", "rb+")
+    f.seek(-1, os.SEEK_END)
+    f.truncate()
     f.close()
 
+    f = open(f"p={permutation}_{instance}_actual_routes.json", "a")
+    f.write(']')
+    f.close()
+
+    # f = open(f"{len(routes)}_final_standard_route.json", "w")
+    # f.write(Route.write_routes_json(routes))
+    # f.close()
 
 
-    et = time.time()
 
-    elapsed_time = et - st
-    print('Execution time:', elapsed_time, 'seconds')
+    # et = time.time()
 
-    
+    # elapsed_time = et - st
+    # print('Execution time:', elapsed_time, 'seconds')
+
+generate_data()
